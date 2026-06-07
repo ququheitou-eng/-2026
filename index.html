@@ -294,14 +294,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
 .diary-entry.is-thought .drag-handle{color:rgba(217,119,6,0.3)}
 .diary-entry.is-thought:hover .drag-handle{color:var(--amber)}
 
-/* Paper airplane animation – big */
+/* Paper airplane – white sketch, slow & grand */
 @keyframes fly-away{
-  0%{transform:translate(0,0) rotate(-15deg) scale(1);opacity:1}
-  15%{transform:translate(30px,-60px) rotate(-25deg) scale(1.15);opacity:1}
-  50%{transform:translate(160px,-260px) rotate(-38deg) scale(.65);opacity:.9}
-  100%{transform:translate(360px,-520px) rotate(-50deg) scale(.05);opacity:0}
+  0%  {transform:translate(0,0)       rotate(0deg)   scale(1);   opacity:1}
+  8%  {transform:translate(-10px,-30px) rotate(-8deg)  scale(1.04);opacity:1}
+  25% {transform:translate(60px,-140px) rotate(-18deg) scale(1);   opacity:1}
+  55% {transform:translate(200px,-340px)rotate(-28deg) scale(.7);  opacity:.85}
+  80% {transform:translate(340px,-500px)rotate(-38deg) scale(.35); opacity:.5}
+  100%{transform:translate(480px,-650px)rotate(-48deg) scale(.05); opacity:0}
 }
-.airplane-projectile{position:fixed;z-index:2000;pointer-events:none;line-height:1;animation:fly-away 1.15s cubic-bezier(.15,0,.75,1) forwards}
+.airplane-projectile{position:fixed;z-index:2000;pointer-events:none;animation:fly-away 3.2s cubic-bezier(.25,.1,.3,1) forwards}
 
 @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px}.plan-grid{grid-template-columns:1fr 1fr}.prog-grid{grid-template-columns:1fr}.plan-detail-grid{grid-template-columns:1fr}.orbs-row{gap:20px}}
 </style>
@@ -853,16 +855,16 @@ function doCheckin(){
 
 // ════════════ TIME CHART ════════════
 function renderTimeChart(){
-  const data=[...diaries].reverse(); // oldest first
+  // 按日期降序（最新在上），与日记手动排序无关
+  const data=[...diaries].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const el=document.getElementById('time-chart-bars');
   if(!data.length){el.innerHTML='<div style="padding:20px;font-size:13px;color:var(--text3)">写日记并记录时长后这里会出现学习记录</div>';return;}
   const maxH=Math.max(...data.map(d=>parseHours(d.hours)),0.5);
   const total=data.reduce((s,d)=>s+parseHours(d.hours),0);
-  // Color: single green hue, opacity = proportion of max
   el.innerHTML=`<div class="tc-wrap">`+data.map(d=>{
     const h=parseHours(d.hours);
     const pct=Math.max((h/maxH)*100,h>0?3:0);
-    const alpha=0.25+0.75*(h/maxH); // 0.25–1.0
+    const alpha=0.25+0.75*(h/maxH);
     const color=`rgba(22,163,74,${alpha.toFixed(2)})`;
     const dateStr=(d.dateLabel||d.date).replace(/周./,'').trim();
     const bodyPreview=(d.body||'').trim();
@@ -1358,27 +1360,46 @@ function sendThought(){
   const sendBtn=document.getElementById('thought-send-btn');
   const br=sendBtn.getBoundingClientRect();
 
-  // Spawn paper plane SVG at send button center
+  // 400px 白色素描纸飞机，从发送按钮中心出发
   const plane=document.createElement('div');
   plane.className='airplane-projectile';
-  plane.style.left=(br.left+br.width/2-40)+'px';
-  plane.style.top=(br.top+br.height/2-40)+'px';
-  // Large paper plane SVG
-  plane.innerHTML=`<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <filter id="ps"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="rgba(22,163,74,0.4)"/></filter>
-    <g filter="url(#ps)">
-      <path d="M8 40 L72 8 L48 72 L38 48 Z" fill="#16a34a"/>
-      <path d="M8 40 L38 48 L48 72 Z" fill="#4ade80"/>
-      <path d="M38 48 L72 8 L48 72 Z" fill="#15803d"/>
-      <path d="M8 40 L72 8 L38 48" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" fill="none"/>
+  const W=400, H=400;
+  plane.style.left=(br.left+br.width/2 - W/2)+'px';
+  plane.style.top =(br.top +br.height/2- H/2)+'px';
+  plane.style.width =W+'px';
+  plane.style.height=H+'px';
+  // 白色素描风纸飞机 SVG
+  plane.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="pf" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.18)"/>
+      </filter>
+    </defs>
+    <g filter="url(#pf)" transform="rotate(-15,50,50)">
+      <!-- 主机身（白色，带铅笔质感描边） -->
+      <path d="M10 52 L88 12 L60 88 L46 58 Z"
+        fill="white" stroke="#c8c8c8" stroke-width="1.2" stroke-linejoin="round"/>
+      <!-- 底部折叠面（淡灰） -->
+      <path d="M10 52 L46 58 L60 88 Z"
+        fill="#f0f0f0" stroke="#c0c0c0" stroke-width="0.8" stroke-linejoin="round"/>
+      <!-- 右侧立体面 -->
+      <path d="M46 58 L88 12 L60 88 Z"
+        fill="#e8e8e8" stroke="#bdbdbd" stroke-width="0.8" stroke-linejoin="round"/>
+      <!-- 折痕中线（素描感） -->
+      <path d="M10 52 L88 12" stroke="#b0b0b0" stroke-width="0.6" stroke-dasharray="3 2" opacity="0.6"/>
+      <!-- 左翼折线 -->
+      <path d="M46 58 L88 12" stroke="#c0c0c0" stroke-width="0.5" opacity="0.5"/>
+      <!-- 小笔触/纹理线（素描感） -->
+      <path d="M32 38 L50 30" stroke="#d0d0d0" stroke-width="0.4" opacity="0.7"/>
+      <path d="M28 45 L44 38" stroke="#d0d0d0" stroke-width="0.4" opacity="0.5"/>
     </g>
   </svg>`;
   document.body.appendChild(plane);
 
-  // Fold panel away
+  // 面板折叠消失
   panel.classList.add('sending');
   document.getElementById('thought-backdrop').style.opacity='0';
-  document.getElementById('thought-backdrop').style.transition='opacity .45s';
+  document.getElementById('thought-backdrop').style.transition='opacity .5s';
 
   setTimeout(()=>{
     panel.classList.remove('sending');
@@ -1391,7 +1412,7 @@ function sendThought(){
     if(document.body.contains(plane))document.body.removeChild(plane);
     renderDiaryList();renderTimeChart();
     showToast('随笔已收入日记 ✈');
-  },1100);
+  },3400);
 }
 
 // ════════════ INIT ════════════
