@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学复习仪表盘 · 备考6.15</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6f8;--bg2:#ffffff;--bg3:#f0f1f4;--bg4:#e4e6ec;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
+  --text:#1a1d2e;--text2:#4a5070;--text3:#8a90aa;
+  --green:#16a34a;--green-dim:rgba(22,163,74,0.09);
+  --blue:#2563eb;--blue-dim:rgba(37,99,235,0.09);
+  --amber:#d97706;--amber-dim:rgba(217,119,6,0.10);
+  --red:#dc2626;--red-dim:rgba(220,38,38,0.09);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.09);
+  --font-serif:'Noto Serif SC',serif;
+  --font-sans:'Microsoft YaHei','微软雅黑','PingFang SC',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --radius:12px;--radius-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.6;min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg3)}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.topbar{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-title{font-family:var(--font-serif);font-size:17px;font-weight:600;letter-spacing:.02em}
+.topbar-title span{color:var(--green)}
+.topbar-stats{display:flex;gap:20px;align-items:center}
+.tstat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
+.tstat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.main{padding:28px 32px;overflow-y:auto;min-height:calc(100vh - 58px)}
+.nav-section{padding:0 14px;margin-bottom:4px;margin-top:12px}
+.nav-section-label{font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;padding:0 6px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 20px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;border-left:2px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--bg3)}
+.nav-item.active{color:var(--green);border-left-color:var(--green);background:var(--green-dim)}
+.nav-icon{font-size:16px;width:18px;text-align:center;flex-shrink:0}
+/* Countdown */
+.countdown-card{background:linear-gradient(135deg,var(--bg3),var(--bg4));border:1px solid var(--border2);border-radius:var(--radius);padding:20px;margin:12px 14px 8px;text-align:center}
+.countdown-label{font-size:10px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+.countdown-digits{display:flex;justify-content:center;gap:6px;margin-bottom:8px}
+.cd-block{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;min-width:44px}
+.cd-num{font-family:var(--font-mono);font-size:22px;font-weight:500;color:var(--green);line-height:1;display:block}
+.cd-unit{font-size:9px;color:var(--text3);letter-spacing:.08em;display:block;margin-top:2px}
+.cd-sep{font-family:var(--font-mono);font-size:20px;color:var(--text3);padding-top:4px}
+.countdown-exams{font-size:11px;color:var(--text3);margin-bottom:6px}
+.exam-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;margin:2px}
+.exam-badge.calc{background:var(--green-dim);color:var(--green)}
+.exam-badge.lin{background:var(--blue-dim);color:var(--blue)}
+.streak-mini{margin:0 14px;padding:12px 14px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.streak-row{display:flex;align-items:center;justify-content:space-between}
+.streak-label{font-size:11px;color:var(--text3)}
+.streak-val{font-family:var(--font-mono);font-size:13px;color:var(--amber);font-weight:500}
+.streak-dots{display:flex;gap:3px;margin-top:7px;flex-wrap:wrap}
+.streak-dot{width:10px;height:10px;border-radius:2px;background:var(--bg4)}
+.streak-dot.done{background:var(--green)}.streak-dot.today{background:var(--amber)}
+/* Sections */
+.section{display:none}.section.active{display:block}
+.page-header{margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.page-title{font-family:var(--font-serif);font-size:22px;font-weight:600;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--text3)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:14px;letter-spacing:.03em;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.card-title-icon{font-size:15px}
+.prog-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.prog-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px}
+.prog-name{font-size:12px;color:var(--text3);margin-bottom:4px}
+.prog-pct{font-family:var(--font-mono);font-size:28px;font-weight:500;margin-bottom:10px}
+.prog-bar-wrap{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.prog-bar{height:6px;border-radius:3px;transition:width .5s ease}
+.prog-sub{font-size:11px;color:var(--text3);margin-top:6px}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab-btn{padding:9px 18px;font-size:13px;cursor:pointer;color:var(--text3);background:transparent;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:var(--font-sans)}
+.tab-btn:hover{color:var(--text2)}.tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:5px 12px;border:1px solid var(--border2);border-radius:20px;font-size:12px;cursor:pointer;color:var(--text3);background:transparent;font-family:var(--font-sans);transition:all .15s}
+.filter-btn:hover{border-color:var(--text3);color:var(--text2)}.filter-btn.active{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.btn-edit{border-color:var(--amber);color:var(--amber)}.btn-edit:hover{background:var(--amber-dim)}
+.btn-done{background:var(--amber)!important;color:#fff!important;border-color:var(--amber)!important}
+/* Checkin orbs */
+.checkin-stage{position:relative;background:linear-gradient(160deg,#f0f4ff,#e8f5ee);border:1px solid var(--border);border-radius:var(--radius);padding:32px 24px 28px;margin-bottom:16px;overflow:hidden;display:flex;flex-direction:column;align-items:center}
+.checkin-stage::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -10%,rgba(22,163,74,0.07),transparent);pointer-events:none}
+.checkin-date-label{font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:.08em;margin-bottom:20px}
+.orbs-row{display:flex;gap:36px;align-items:flex-end;justify-content:center;margin-bottom:24px}
+.orb-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.orb-label{font-size:11px;color:var(--text3);letter-spacing:.05em;font-family:var(--font-mono)}
+.orb-svg{width:88px;height:88px;cursor:pointer;display:block;transition:transform .15s}
+.orb-svg:active{transform:scale(0.94)}
+.orb-icon{dominant-baseline:central;text-anchor:middle;user-select:none}
+@keyframes orb-pulse{0%,100%{r:18;opacity:.15}50%{r:22;opacity:.25}}
+.orb-done .orb-pulse-ring{animation:orb-pulse 2.4s ease-in-out infinite}
+@keyframes ripple-out{from{r:0;opacity:.45}to{r:40;opacity:0}}
+.checkin-streak-row{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--text2)}
+.streak-fire{font-size:24px}
+.streak-num{font-family:var(--font-mono);font-size:26px;font-weight:500;color:var(--amber)}
+.checkin-main-btn{margin-top:16px;display:inline-flex;align-items:center;gap:8px;padding:10px 32px;border-radius:50px;background:var(--green);color:#fff;font-size:14px;font-weight:500;cursor:pointer;border:none;font-family:var(--font-sans);transition:all .25s;box-shadow:0 2px 12px rgba(22,163,74,0.25)}
+.checkin-main-btn:hover{background:#15803d;transform:translateY(-1px)}
+.checkin-main-btn.checked{background:var(--bg4);color:var(--text3);cursor:default;transform:none;box-shadow:none}
+/* Calendar */
+.cal-nav-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.cal-nav-btn{padding:4px 10px;border:1px solid var(--border2);border-radius:20px;background:transparent;font-size:11px;color:var(--text3);cursor:pointer;font-family:var(--font-sans);transition:all .15s;line-height:1.4}
+.cal-nav-btn:hover:not(:disabled){border-color:var(--text2);color:var(--text2);background:var(--bg3)}
+.cal-nav-btn:disabled{opacity:.3;cursor:default}
+.cal-nav-label{flex:1;text-align:center;font-size:13px;font-weight:500;color:var(--text2);font-family:var(--font-mono)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day{aspect-ratio:1;border-radius:4px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);font-family:var(--font-mono);cursor:default;transition:all .15s;position:relative}
+.cal-day.has-entry{cursor:pointer}.cal-day.has-entry:hover{transform:scale(1.1);box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:2}
+.cal-day.makeup-avail{cursor:pointer;border:1px dashed rgba(217,119,6,0.5)}
+.cal-day.makeup-avail:hover{background:var(--amber-dim);transform:scale(1.08);z-index:2;border-color:var(--amber)}
+.cal-day.level-1{background:rgba(22,163,74,0.2);color:var(--green)}
+.cal-day.level-2{background:rgba(22,163,74,0.5);color:#fff}
+.cal-day.level-3{background:rgba(22,163,74,0.85);color:#fff;font-weight:500}
+.cal-day.today-mark{box-shadow:0 0 0 2px var(--amber)}
+.cal-day.empty{background:transparent}
+.cal-labels{display:flex;justify-content:space-around;font-size:10px;color:var(--text3);margin-bottom:3px;font-family:var(--font-mono)}
+/* Time chart */
+.time-chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;padding-bottom:24px;border-bottom:1.5px solid var(--border2)}
+.time-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;min-width:0}
+.time-bar{width:100%;border-radius:6px 6px 0 0;min-height:4px;cursor:pointer;transition:filter .2s,transform .2s;overflow:hidden;position:relative}
+.time-bar:hover{filter:brightness(1.08);transform:scaleY(1.02);transform-origin:bottom}
+.time-bar::after{content:'';position:absolute;top:0;left:-50%;width:200%;height:6px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);border-radius:3px;animation:wave-slide 2.5s ease-in-out infinite}
+@keyframes wave-slide{0%{transform:translateX(-30%)}100%{transform:translateX(30%)}}
+.time-bar-label{position:absolute;bottom:-20px;font-size:9px;color:var(--text3);white-space:nowrap;font-family:var(--font-mono);left:50%;transform:translateX(-50%)}
+.time-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--text);color:#fff;border-radius:8px;padding:8px 12px;font-size:11px;white-space:nowrap;pointer-events:none;z-index:10;opacity:0;transition:opacity .15s;line-height:1.6;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.time-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--text)}
+.time-bar-col:hover .time-tooltip{opacity:1}
+.time-chart-total{font-size:12px;color:var(--text3);margin-top:10px;text-align:right;font-family:var(--font-mono)}
+/* Checklist */
+.chapter-block{margin-bottom:10px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.ch-header{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;background:var(--bg3);transition:background .15s}
+.ch-header:hover{background:var(--bg4)}
+.ch-arrow{font-size:10px;color:var(--text3);transition:transform .2s;flex-shrink:0}
+.ch-arrow.open{transform:rotate(90deg)}
+.ch-title-text{font-size:13px;font-weight:500;flex:1}
+.ch-stats{font-size:11px;color:var(--text3);font-family:var(--font-mono);flex-shrink:0}
+.mini-prog{width:52px;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;flex-shrink:0}
+.mini-prog-fill{height:4px;border-radius:2px;transition:width .3s}
+.ch-items{display:none}.ch-items.open{display:block}
+.ch-note{padding:6px 16px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border);font-style:italic}
+.kp-item{display:flex;align-items:flex-start;gap:12px;padding:9px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.kp-item:last-child{border-bottom:none}.kp-item:hover{background:var(--bg3)}
+.kp-cb{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .15s}
+.kp-cb.partial{border-color:var(--amber);background:var(--amber-dim);color:var(--amber)}
+.kp-cb.done{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.kp-body{flex:1}.kp-name{font-size:13px}.kp-name.done{color:var(--text3);text-decoration:line-through}
+.kp-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.freq-badge{font-size:10px;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:2px;font-weight:500}
+.freq-high{background:var(--red-dim);color:var(--red)}.freq-mid{background:var(--amber-dim);color:var(--amber)}.freq-low{background:var(--bg4);color:var(--text3)}
+/* Plan */
+.plan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.plan-week{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;cursor:pointer;transition:border-color .15s}
+.plan-week:hover,.plan-week.active{border-color:var(--green)}.plan-week.active{background:var(--green-dim)}
+.pw-tag{font-size:10px;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:8px}
+.pw-title{font-size:13px;font-weight:500;margin-bottom:4px}
+.plan-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.plan-subject{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px}
+.ps-label{font-size:11px;margin-bottom:4px;font-weight:500}
+.ps-name{font-size:13px;font-weight:500;margin-bottom:10px}
+.ps-tasks{list-style:none}
+.ps-tasks li{font-size:12px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:7px;align-items:flex-start}
+.ps-tasks li:last-child{border-bottom:none}.ps-tasks li::before{content:"›";color:var(--text3);flex-shrink:0}
+/* Schedule */
+.daily-sched{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px}
+.sched-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.sched-row:last-child{margin-bottom:0}
+.sched-time{font-family:var(--font-mono);font-size:11px;color:var(--text3);min-width:100px}
+.sched-bar{flex:1;padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:500}
+/* Goals inline */
+.goal-row-wrap{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.goal-row-wrap:last-child{border-bottom:none}
+.goal-inline-text{flex:1;font-size:13px;color:var(--text);line-height:1.5;outline:none;border-radius:4px;padding:2px 6px;cursor:text;transition:background .15s;min-height:22px}
+.goal-inline-text:hover{background:var(--bg3)}.goal-inline-text:focus{background:var(--bg3);box-shadow:0 0 0 2px rgba(217,119,6,0.2)}
+.goal-inline-text.done{color:var(--text3);text-decoration:line-through}
+.goal-reset-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:3px;flex-shrink:0;opacity:.5;transition:opacity .15s}
+.goal-reset-btn:hover{opacity:1;color:var(--amber)}
+/* Diary */
+.diary-composer{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.diary-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.diary-date-label{font-family:var(--font-mono);font-size:12px;color:var(--text3)}
+.diary-mood{display:flex;gap:6px}
+.mood-btn{font-size:18px;cursor:pointer;opacity:.4;transition:opacity .15s,transform .15s;background:none;border:none;padding:0}
+.mood-btn:hover,.mood-btn.selected{opacity:1;transform:scale(1.2)}
+.diary-fields{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.field-label{font-size:11px;color:var(--text3);margin-bottom:5px;letter-spacing:.05em}
+.diary-input,.diary-textarea{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font-sans);font-size:13px;padding:10px 13px;resize:none;outline:none;transition:border-color .15s}
+.diary-input:focus,.diary-textarea:focus{border-color:var(--green)}
+.diary-textarea{min-height:90px;line-height:1.7}
+.diary-actions{padding:12px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.save-btn{padding:8px 20px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans);transition:background .15s}
+.save-btn:hover{background:#15803d}
+.word-count{font-size:11px;color:var(--text3);font-family:var(--font-mono)}
+.diary-entry{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:10px;transition:border-color .15s}
+.diary-entry:hover{border-color:var(--border2)}
+.diary-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.entry-date{font-family:var(--font-mono);font-size:11px;color:var(--text3)}
+.entry-summary{font-size:13px;font-weight:500;margin-bottom:6px}
+.entry-body{font-size:13px;color:var(--text2);line-height:1.7}
+.entry-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.entry-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg4);color:var(--text3)}
+.entry-actions{display:flex;gap:6px;opacity:0;transition:opacity .15s}
+.diary-entry:hover .entry-actions{opacity:1}
+.entry-btn{background:none;border:1px solid var(--border2);border-radius:4px;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 8px;font-family:var(--font-sans);transition:all .15s}
+.entry-btn:hover{border-color:var(--text3);color:var(--text2)}.entry-btn.del:hover{border-color:var(--red);color:var(--red)}
+.diary-entry-editing{border-color:var(--amber)!important}
+.de-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--font-sans);font-size:13px;padding:5px 9px;outline:none;transition:border-color .15s;margin-bottom:6px}
+.de-input:focus{border-color:var(--amber)}
+.de-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--font-sans);font-size:13px;padding:5px 9px;outline:none;resize:vertical;min-height:80px;line-height:1.7;margin-bottom:6px}
+.de-textarea:focus{border-color:var(--amber)}
+.de-row{display:flex;gap:8px;margin-bottom:6px}
+/* Edit UI */
+.edit-input{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--font-sans);font-size:13px;padding:5px 9px;outline:none;transition:border-color .15s}
+.edit-input:focus{border-color:var(--amber)}.edit-input.sm{font-size:12px;padding:3px 7px}
+.edit-select{font-size:11px;padding:4px 7px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font-sans);cursor:pointer;outline:none}
+.edit-del-btn{font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;font-family:var(--font-sans);white-space:nowrap}
+.edit-del-btn:hover{border-color:var(--red);background:var(--red-dim);color:var(--red)}
+.add-row-btn{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px 14px;border-radius:var(--radius-sm);border:1px dashed var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--font-sans);transition:all .15s;width:100%;margin-top:8px}
+.add-row-btn:hover{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.edit-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(217,119,6,0.07);border:1px solid rgba(217,119,6,0.2);border-radius:var(--radius-sm);font-size:12px;color:var(--amber);margin-bottom:12px}
+.kp-item-edit{background:var(--bg3);cursor:default}.kp-item-edit:hover{background:var(--bg3)}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:var(--bg2);border-radius:var(--radius);padding:24px;max-width:440px;width:100%;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.15)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-family:var(--font-serif);font-size:16px;font-weight:600}
+.modal-close{background:none;border:none;font-size:20px;color:var(--text3);cursor:pointer;padding:2px 6px;border-radius:4px}
+.modal-close:hover{background:var(--bg3)}
+/* Modal goal rows (editable) */
+.modal-goal-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.modal-goal-row:last-child{border-bottom:none}
+/* Session pill */
+.session-pill{cursor:pointer;padding:6px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border);transition:all .15s;user-select:none}
+.session-pill:hover{opacity:.85}
+/* Misc */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.5}.empty-text{font-size:13px}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;border-radius:var(--radius-sm);padding:12px 18px;font-size:13px;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.15)}
+.toast.show{transform:translateY(0);opacity:1}
+/* ── Drag-and-drop diary ── */
+.diary-entry{position:relative}
+.drag-handle{cursor:grab;color:var(--border2);font-size:16px;padding:2px 8px 2px 0;flex-shrink:0;opacity:0;transition:opacity .15s;user-select:none;line-height:1;margin-top:1px}
+.diary-entry:hover .drag-handle{opacity:1}
+.drag-handle:active{cursor:grabbing;color:var(--text3)}
+.diary-entry.dragging{opacity:.3;transform:scale(.975);box-shadow:none}
+.diary-entry.drag-over{border-color:var(--green)!important;background:var(--green-dim)!important}
+
+/* ── Thought panel ── */
+.thought-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.1);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:290}
+.thought-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(660px,92vw);height:min(540px,82vh);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:0 28px 70px rgba(0,0,0,0.13),0 4px 20px rgba(0,0,0,0.07);z-index:295;display:flex;flex-direction:column;overflow:hidden;transition:transform .45s cubic-bezier(.4,0,1,1),opacity .45s}
+.thought-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--blue),var(--purple));border-radius:var(--radius) var(--radius) 0 0;z-index:1}
+.thought-panel.sending{transform:translate(-50%,-62%) scale(.75) rotate(-2deg);opacity:0}
+.thought-header{padding:16px 20px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+.thought-title{font-family:var(--font-serif);font-size:15px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.thought-char-count{font-size:11px;color:var(--text3);font-family:var(--font-mono);font-weight:400}
+.thought-body{flex:1;overflow:hidden;display:flex}
+.thought-textarea{flex:1;width:100%;border:none;outline:none;resize:none;font-family:var(--font-sans);font-size:14px;color:var(--text);background:transparent;padding:20px 22px;line-height:2;overflow-y:auto}
+.thought-textarea::placeholder{color:var(--text3);font-style:italic;line-height:2}
+.thought-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.thought-save-label{font-size:11px;color:var(--text3);font-family:var(--font-mono)}
+.thought-send-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 22px;border-radius:50px;background:var(--text);color:#fff;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:var(--font-sans);transition:all .2s}
+.thought-send-btn:hover{background:var(--green);transform:translateY(-1px);box-shadow:0 4px 14px rgba(22,163,74,.3)}
+.thought-close-btn{background:none;border:none;font-size:20px;color:var(--text3);cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1;transition:all .15s}
+.thought-close-btn:hover{background:var(--bg3);color:var(--text)}
+
+/* Thought trigger button hover preview */
+.thought-trigger-wrap{position:relative;display:inline-block}
+.thought-preview-popup{position:absolute;bottom:calc(100% + 8px);right:0;width:220px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:11px 13px;font-size:11px;color:var(--text2);line-height:1.7;box-shadow:0 4px 16px rgba(0,0,0,0.1);display:none;z-index:200;white-space:pre-wrap;word-break:break-all}
+.thought-preview-popup .preview-label{font-size:10px;color:var(--text3);font-weight:500;margin-bottom:5px;display:block;letter-spacing:.05em;text-transform:uppercase}
+.thought-trigger-wrap:hover .thought-preview-popup{display:block}
+
+/* Thought diary card variant */
+.diary-entry.is-thought{background:linear-gradient(135deg,#fffdf0,#fffff9);border-color:rgba(217,119,6,0.18)}
+.diary-entry.is-thought .drag-handle{color:rgba(217,119,6,0.3)}
+.diary-entry.is-thought:hover .drag-handle{color:var(--amber)}
+
+/* Paper airplane animation */
+@keyframes fly-away{
+  0%{transform:translate(0,0) rotate(-10deg) scale(1);opacity:1}
+  20%{transform:translate(50px,-80px) rotate(-28deg) scale(1.08);opacity:1}
+  55%{transform:translate(180px,-280px) rotate(-42deg) scale(.38);opacity:.75}
+  100%{transform:translate(340px,-500px) rotate(-55deg) scale(.02);opacity:0}
+}
+.airplane-projectile{position:fixed;font-size:30px;z-index:2000;pointer-events:none;line-height:1;animation:fly-away 1.05s cubic-bezier(.2,0,.8,1) forwards}
+
+@media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px}.plan-grid{grid-template-columns:1fr 1fr}.prog-grid{grid-template-columns:1fr}.plan-detail-grid{grid-template-columns:1fr}.orbs-row{gap:20px}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header class="topbar" style="grid-column:1/-1">
+  <div class="topbar-title">数学备考 <span>·</span> 2026</div>
+  <div class="topbar-stats">
+    <div class="tstat"><div class="tstat-dot" style="background:var(--green)"></div><span id="tb-calc">微积分 0%</span></div>
+    <div class="tstat"><div class="tstat-dot" style="background:var(--blue)"></div><span id="tb-lin">线代 0%</span></div>
+    <div class="tstat" id="tb-streak"><span>🎯 连续 0 天</span></div>
+    <div class="tstat" style="border-left:1px solid var(--border);padding-left:16px;margin-left:4px">
+      <span id="cloud-status" style="font-size:11px;font-family:var(--font-mono);color:var(--text3);cursor:default" title="云同步状态">☁ 本地</span>
+    </div>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <div class="countdown-card">
+    <div class="countdown-label">距考试还有</div>
+    <div class="countdown-digits">
+      <div class="cd-block"><span class="cd-num" id="cd-d">--</span><span class="cd-unit">天</span></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><span class="cd-num" id="cd-h">--</span><span class="cd-unit">时</span></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><span class="cd-num" id="cd-m">--</span><span class="cd-unit">分</span></div>
+    </div>
+    <div class="countdown-exams" id="cd-exam-labels"></div>
+    <button onclick="editExamDate()" style="font-size:10px;color:var(--text3);background:none;border:1px dashed var(--border2);border-radius:10px;padding:2px 10px;cursor:pointer;font-family:var(--font-sans);margin-top:4px">修改考试日期</button>
+  </div>
+  <div class="streak-mini">
+    <div class="streak-row"><span class="streak-label">本月签到</span><span class="streak-val" id="sidebar-streak">0 天</span></div>
+    <div class="streak-dots" id="sidebar-dots"></div>
+  </div>
+  <div class="nav-section"><div class="nav-section-label">导航</div></div>
+  <div class="nav-item active" onclick="nav('overview')"><span class="nav-icon">◎</span>总览</div>
+  <div class="nav-item" onclick="nav('checklist')"><span class="nav-icon">✓</span>知识点清单</div>
+  <div class="nav-item" onclick="nav('plan')"><span class="nav-icon">▦</span>复习计划</div>
+  <div class="nav-item" onclick="nav('checkin')"><span class="nav-icon">◈</span>每日签到</div>
+  <div class="nav-item" onclick="nav('diary')"><span class="nav-icon">✎</span>复习日记</div>
+</aside>
+
+<main class="main">
+<!-- OVERVIEW -->
+<div id="sec-overview" class="section active">
+  <div class="page-header"><div><div class="page-title">今日概览</div><div class="page-sub" id="overview-date"></div></div></div>
+  <div class="checkin-stage" id="overview-checkin-stage">
+    <div class="checkin-date-label" id="overview-checkin-date"></div>
+    <div class="orbs-row" id="orbs-row"></div>
+    <div class="checkin-streak-row">
+      <div class="streak-fire" id="ov-flame">🎯</div>
+      <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">连续打卡</div><div class="streak-num" id="ov-streak">0</div></div>
+      <div style="width:1px;height:36px;background:var(--border2)"></div>
+      <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">今日完成</div><div id="ov-goals-done" style="font-family:var(--font-mono);font-size:20px;font-weight:500;color:var(--green)">0/5</div></div>
+      <div style="width:1px;height:36px;background:var(--border2)"></div>
+      <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">累计学时</div><div id="ov-total-hours" style="font-family:var(--font-mono);font-size:20px;font-weight:500;color:var(--blue)">0h</div></div>
+    </div>
+    <button class="checkin-main-btn" id="overview-checkin-btn" onclick="doCheckin()">✦ 今日打卡</button>
+  </div>
+  <div class="prog-grid">
+    <div class="prog-card">
+      <div class="prog-name">微积分(2) — 第5章至第6章</div>
+      <div class="prog-pct" id="calc-pct" style="color:var(--green)">0%</div>
+      <div class="prog-bar-wrap"><div class="prog-bar" id="calc-bar" style="background:var(--green)"></div></div>
+      <div class="prog-sub" id="calc-sub">加载中…</div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-name">线性代数 — 前三章</div>
+      <div class="prog-pct" id="lin-pct" style="color:var(--blue)">0%</div>
+      <div class="prog-bar-wrap"><div class="prog-bar" id="lin-bar" style="background:var(--blue)"></div></div>
+      <div class="prog-sub" id="lin-sub">加载中…</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-title-icon">⏱</span>学习时长记录 <span style="font-size:11px;color:var(--text3);font-weight:400">悬停查看详情</span></div>
+    <div style="position:relative;padding:0 4px"><div class="time-chart-bars" id="time-chart-bars"></div></div>
+    <div class="time-chart-total" id="time-chart-total"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-title-icon">⊡</span>每日时间安排<span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:4px">工作日3h · 周末弹性 · 目标90h+</span>
+      <div style="margin-left:auto"><button class="filter-btn btn-edit" id="sched-edit-btn" onclick="toggleSchedEdit()">✎ 编辑</button></div>
+    </div>
+    <div id="sched-view"></div><div id="sched-edit" style="display:none"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-title-icon">◈</span>本月签到热力图 <span style="font-size:11px;color:var(--text3);font-weight:400">点击任意日期查看/编辑</span></div>
+    <div class="cal-labels" id="cal-week-labels"></div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--text3)">少 <div style="width:10px;height:10px;border-radius:2px;background:rgba(22,163,74,0.2)"></div><div style="width:10px;height:10px;border-radius:2px;background:rgba(22,163,74,0.5)"></div><div style="width:10px;height:10px;border-radius:2px;background:rgba(22,163,74,0.85)"></div> 多（目标完成数）&nbsp;·&nbsp; <span style="border:1px dashed rgba(217,119,6,0.5);padding:1px 5px;border-radius:3px;color:var(--amber)">虚线=未打卡可补签</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-title-icon">!</span>85分策略</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:13px"><div style="font-size:13px;color:var(--red)">🎯 高频知识点全部拿下</div><div style="font-size:12px;color:var(--text3);margin-top:4px">约占考试分数 70%+</div></div>
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:13px"><div style="font-size:13px;color:var(--amber)">⏭ 低频知识点可最后处理</div><div style="font-size:12px;color:var(--text3);margin-top:4px">时间不够时优先跳过</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKLIST -->
+<div id="sec-checklist" class="section">
+  <div class="page-header"><div><div class="page-title">知识点清单</div><div class="page-sub">点击一次=看过/模糊，再点=已掌握，第三次=重置</div></div></div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+    <div class="filter-bar" id="kp-filter-bar" style="margin-bottom:0;flex:1;flex-wrap:wrap">
+      <button class="filter-btn active" id="kp-f-all" onclick="filterKP('all',this)">全部</button>
+      <button class="filter-btn" onclick="filterKP('undone',this)">未完成</button>
+      <button class="filter-btn" onclick="filterKP('high',this)">仅高频</button>
+      <button class="filter-btn" onclick="expandAllCh()">展开全部</button>
+      <button class="filter-btn" onclick="collapseAllCh()">收起全部</button>
+    </div>
+    <button class="filter-btn btn-edit" id="kp-edit-btn" onclick="toggleKPEdit()">✎ 编辑清单</button>
+    <button class="filter-btn" onclick="resetKPData()" style="color:var(--text3)">↺ 重置</button>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchKPTab('calc',this)">📐 微积分(2)</button>
+    <button class="tab-btn" onclick="switchKPTab('lin',this)">🔢 线性代数</button>
+  </div>
+  <div id="kp-calc"></div>
+  <div id="kp-lin" style="display:none"></div>
+</div>
+
+<!-- PLAN -->
+<div id="sec-plan" class="section">
+  <div class="page-header">
+    <div><div class="page-title">四周复习计划</div><div class="page-sub">点击周卡查看详情</div></div>
+    <button class="filter-btn btn-edit" id="plan-edit-btn" style="flex-shrink:0;margin-top:4px" onclick="togglePlanEdit()">✎ 编辑计划</button>
+  </div>
+  <div class="plan-grid" id="plan-weeks"></div>
+  <div id="plan-detail-area"></div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-title"><span class="card-title-icon">↯</span>应对拖延</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:13px"><div style="font-size:13px;font-weight:500;margin-bottom:5px;color:var(--green)">最小启动</div><div style="font-size:12px;color:var(--text2)">只打开书看一题，告诉自己"就五分钟"——启动了就停不下来。</div></div>
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:13px"><div style="font-size:13px;font-weight:500;margin-bottom:5px;color:var(--blue)">任务颗粒化</div><div style="font-size:12px;color:var(--text2)">不写"复习线代"，写"看行列式展开视频+做3道题"。</div></div>
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:13px"><div style="font-size:13px;font-weight:500;margin-bottom:5px;color:var(--amber)">允许不完整</div><div style="font-size:12px;color:var(--text2)">今天只学了一个知识点也算赢了。85分不需要懂全部。</div></div>
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:13px"><div style="font-size:13px;font-weight:500;margin-bottom:5px;color:var(--purple)">卡住立即问AI</div><div style="font-size:12px;color:var(--text2)">超过10分钟没进展就来问，不要对着一道题发呆。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKIN -->
+<div id="sec-checkin" class="section">
+  <div class="page-header"><div><div class="page-title">每日签到</div><div class="page-sub">早·中·晚三时段打卡 · 点击日历任意日期查看/编辑/补签</div></div></div>
+  <div class="checkin-stage" style="margin-bottom:16px">
+    <div class="checkin-date-label" id="checkin-page-date"></div>
+    <div class="orbs-row" id="checkin-orbs-row"></div>
+    <button class="checkin-main-btn" id="checkin-page-btn" onclick="doCheckin()">✦ 今日打卡</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-title-icon">▦</span>月度打卡 &nbsp;·&nbsp; 连续 <span id="streak-count" style="color:var(--amber);font-family:var(--font-mono)">0</span> 天 &nbsp;·&nbsp; 本月 <span id="month-count" style="color:var(--green);font-family:var(--font-mono)">0</span> 天</div>
+    <!-- Calendar nav -->
+    <div class="cal-nav-row">
+      <button class="cal-nav-btn" onclick="prevCalMonth()">◀ 上月</button>
+      <span class="cal-nav-label" id="checkin-nav-label"></span>
+      <button class="cal-nav-btn" id="checkin-next-btn" onclick="nextCalMonth()">下月 ▶</button>
+      <button class="cal-nav-btn" id="checkin-goto-today" onclick="gotoCurrentMonth()" style="display:none;color:var(--green);border-color:var(--green)">今天</button>
+    </div>
+    <div class="cal-labels" id="checkin-week-labels"></div>
+    <div class="cal-grid" id="checkin-cal"></div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3);display:flex;gap:12px;flex-wrap:wrap">
+      <span>✅ 点击已打卡日期 = 编辑目标/时段</span>
+      <span style="color:var(--amber)">⬡ 点击虚线未打卡 = 补签</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="card-title-icon">◉</span>今日目标
+      <span style="font-size:11px;color:var(--text3);font-weight:400">勾选 · 直接点文字编辑实际完成内容</span>
+      <div style="margin-left:auto"><button class="filter-btn btn-edit" id="goals-edit-btn" onclick="toggleGoalsEdit()">✎ 编辑模板</button></div>
+    </div>
+    <div id="daily-goals-list"></div>
+    <div id="daily-goals-edit" style="display:none"></div>
+  </div>
+</div>
+
+<!-- DIARY -->
+<div id="sec-diary" class="section">
+  <div class="page-header">
+    <div><div class="page-title">复习日记</div><div class="page-sub">拖动 ⠿ 手柄排序 · 悬停卡片显示编辑 · 长文随笔独立空间</div></div>
+    <div class="thought-trigger-wrap">
+      <button class="filter-btn btn-edit" onclick="openThoughtPanel()" style="white-space:nowrap">✍ 长文随笔</button>
+      <div class="thought-preview-popup">
+        <span class="preview-label">草稿预览</span>
+        <span id="thought-preview-text">暂无草稿</span>
+      </div>
+    </div>
+  </div>
+  <div class="diary-composer">
+    <div class="diary-header">
+      <div><div class="diary-date-label" id="diary-today"></div><div style="font-size:10px;color:var(--text3);margin-top:2px">保存后可编辑日期</div></div>
+      <div class="diary-mood">
+        <button class="mood-btn" data-mood="😤" onclick="selectMood(this)">😤</button>
+        <button class="mood-btn" data-mood="😐" onclick="selectMood(this)">😐</button>
+        <button class="mood-btn" data-mood="🙂" onclick="selectMood(this)">🙂</button>
+        <button class="mood-btn" data-mood="😊" onclick="selectMood(this)">😊</button>
+        <button class="mood-btn" data-mood="🔥" onclick="selectMood(this)">🔥</button>
+      </div>
+    </div>
+    <div class="diary-fields">
+      <div><div class="field-label">TODAY'S SUMMARY</div><input class="diary-input" id="diary-summary" type="text" placeholder="一句话概括今天学了什么" maxlength="100"></div>
+      <div><div class="field-label">NOTES</div><textarea class="diary-textarea" id="diary-body" placeholder="今天卡在哪里？如何解决？明天计划？" oninput="updateWordCount()"></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="flex:1"><div class="field-label">TAGS</div><input class="diary-input" id="diary-tags" type="text" placeholder="例：偏导数, 链式法则"></div>
+        <div style="flex:1"><div class="field-label">HOURS</div><input class="diary-input" id="diary-hours" type="text" placeholder="例：2.5h"></div>
+      </div>
+    </div>
+    <div class="diary-actions"><div class="word-count" id="word-count">0 字</div><button class="save-btn" onclick="saveDiaryEntry()">保存日记 →</button></div>
+  </div>
+  <div id="diary-list"></div>
+</div>
+</main>
+</div>
+
+<!-- Day Modal -->
+<div class="modal-overlay" id="day-modal" style="display:none" onclick="closeDayModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header"><div class="modal-title" id="modal-date-title"></div><button class="modal-close" onclick="closeDayModal()">×</button></div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+<!-- Thought Panel Backdrop -->
+<div class="thought-backdrop" id="thought-backdrop" style="display:none" onclick="closeThoughtPanel()"></div>
+<!-- Thought Panel -->
+<div class="thought-panel" id="thought-panel" style="display:none">
+  <div class="thought-header">
+    <div class="thought-title">
+      ✍ 长文随笔
+      <span class="thought-char-count" id="thought-char-count">0 字</span>
+    </div>
+    <button class="thought-close-btn" onclick="closeThoughtPanel()" title="关闭（内容已自动保存）">×</button>
+  </div>
+  <div class="thought-body">
+    <textarea class="thought-textarea" id="thought-textarea"
+      placeholder="在这里记录你的长篇思考、复习心得、困惑与顿悟…
+
+内容会每隔片刻自动保存为草稿，随时可以关闭再继续。
+写完点「发送 ✈」把它收进日记。"
+      oninput="onThoughtInput()"></textarea>
+  </div>
+  <div class="thought-footer">
+    <span class="thought-save-label" id="thought-save-label">开始输入…</span>
+    <button class="thought-send-btn" id="thought-send-btn" onclick="sendThought()">发送 ✈</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════ DEFAULT DATA ════════════
+const CALC_KP_DEFAULT=[
+  {ch:"第5章 定积分及其应用",note:"科学出版社·张建梅马庆华版 — 一元积分核心章，计算题必考",items:[
+    {t:"5.1 定积分的概念与性质",sub:"定积分定义（黎曼和）、几何意义、基本性质",f:"high"},
+    {t:"5.2 微积分基本公式",sub:"积分上限函数及其导数、牛顿-莱布尼茨公式（必考）",f:"high"},
+    {t:"5.3 换元积分法",sub:"第一换元法（凑微分）、第二换元法（三角/根式换元）",f:"high"},
+    {t:"5.3 分部积分法",sub:"∫u dv=uv-∫v du，口诀：反对幂三指",f:"high"},
+    {t:"5.4 广义积分",sub:"无穷限积分（±∞）、无界函数的瑕积分、收敛与发散判断",f:"mid"},
+    {t:"5.5 定积分的几何应用",sub:"平面图形面积（直角坐标）、旋转体体积（圆盘法/壳法）",f:"high"},
+    {t:"5.5 定积分的物理应用",sub:"弧长、功、液体压力（了解建模思路即可）",f:"low"},
+  ]},
+  {ch:"第6章 多元函数微积分",note:"多元微分+二重积分，两类题型都有大题",items:[
+    {t:"6.1 空间解析几何简介",sub:"向量的运算、空间直线与平面方程（了解为主）",f:"low"},
+    {t:"6.2 多元函数的基本概念",sub:"二元函数定义域、极限与连续",f:"mid"},
+    {t:"6.3 偏导数",sub:"偏导数定义与计算、高阶偏导数、混合偏导数相等条件",f:"high"},
+    {t:"6.4 全微分",sub:"全微分定义、可微条件、全微分公式 dz=fx·dx+fy·dy",f:"high"},
+    {t:"6.5 复合函数微分法",sub:"链式法则（多元，各路径分别求偏导再相加）",f:"high"},
+    {t:"6.5 隐函数微分法",sub:"F(x,y)=0 隐函数求导公式、F(x,y,z)=0 隐函数偏导",f:"high"},
+    {t:"6.6 多元函数的极值",sub:"极值必要条件（一阶偏导=0）、充分条件（Hessian判别法）",f:"high"},
+    {t:"6.6 条件极值与拉格朗日乘数法",sub:"约束优化，构造拉格朗日函数 L=f+λg",f:"mid"},
+    {t:"6.7 二重积分的概念与性质",sub:"几何意义（曲顶柱体体积）、线性性、对称性",f:"mid"},
+    {t:"6.8 直角坐标系下二重积分计算",sub:"X型/Y型区域划分、确定积分限、交换积分次序（必考）",f:"high"},
+  ]},
+];
+const LIN_KP_DEFAULT=[
+  {ch:"第1章 行列式",note:"工具章，后续所有章节都要用",items:[
+    {t:"行列式的定义与几何意义",sub:"n阶行列式定义、2×2和3×3直接计算",f:"high"},
+    {t:"行列式的性质",sub:"转置、行互换、倍乘、拆分——8个基本性质",f:"high"},
+    {t:"行列式按行（列）展开",sub:"代数余子式、展开定理——化简高阶行列式",f:"high"},
+    {t:"克拉默法则",sub:"方程组有唯一解的条件，用行列式表示解",f:"mid"},
+    {t:"行列式计算技巧",sub:"化三角形法、加边法、递推法",f:"mid"},
+  ]},
+  {ch:"第2章 矩阵",note:"核心工具章，贯穿全课",items:[
+    {t:"矩阵的基本概念与运算",sub:"加法、数乘、矩阵乘法（注意不可交换）",f:"high"},
+    {t:"矩阵的转置与特殊矩阵",sub:"对称矩阵、反对称矩阵、正交矩阵定义",f:"mid"},
+    {t:"逆矩阵的定义与存在条件",sub:"逆矩阵定义、存在条件（行列式≠0）",f:"high"},
+    {t:"用初等行变换求逆矩阵",sub:"增广矩阵[A|I]→[I|A⁻¹]的操作流程（矩阵方块法）",f:"high"},
+    {t:"矩阵的初等变换与初等矩阵",sub:"三种初等变换、与初等矩阵的关系",f:"mid"},
+    {t:"矩阵的秩",sub:"秩的定义、用行变换化阶梯形求秩",f:"high"},
+    {t:"分块矩阵",sub:"分块乘法、分块对角矩阵（了解即可）",f:"low"},
+  ]},
+  {ch:"第3章 向量组与线性方程组",note:"抽象度最高，考试套路固定，必须拿下",items:[
+    {t:"向量的线性表示与线性相关性",sub:"线性组合、线性相关/无关的定义",f:"high"},
+    {t:"线性相关性的判别方法",sub:"用行列式或秩判断，n+1个n维向量必相关",f:"high"},
+    {t:"向量组的秩与极大线性无关组",sub:"极大无关组的求法（化行阶梯形）",f:"high"},
+    {t:"线性方程组有解条件",sub:"Ax=b有解⟺rank(A)=rank(A|b)，解的个数判断",f:"high"},
+    {t:"齐次线性方程组的解",sub:"基础解系、解空间维数=n-r",f:"high"},
+    {t:"非齐次线性方程组的解结构",sub:"通解=特解+齐次通解，求法流程",f:"high"},
+    {t:"向量空间基本概念",sub:"子空间、基、维数（了解定义）",f:"mid"},
+  ]},
+];
+const PLAN_DEFAULT=[
+  {tag:"第一周",tagColor:"#2563eb",date:"5/18–5/24",title:"快速建框架",
+   calc:{name:"微积分(2) · 前置补课",tasks:["宋浩：微积分1第1-4章速览","重点：求导法则、链式法则、换元法","每天1个知识点，配1-2道例题","目标：搞懂后续章节的前置概念"]},
+   lin:{name:"线性代数 · 重建基础",tasks:["第1章：行列式（宋浩视频全刷）","第2章：矩阵运算、逆矩阵（矩阵方块法）","掌握克拉默法则，会算2×2/3×3行列式","每节课后做教材例题，错题记录"]}},
+  {tag:"第二周",tagColor:"#16a34a",date:"5/25–5/31",title:"核心题型攻克",
+   calc:{name:"微积分(2) · 5.1–6.5节",tasks:["5.1–5.3：定积分概念、换元法、分部积分","5.4–5.5：广义积分与几何应用","6.3–6.5：偏导数、全微分、链式法则","每天做5道计算题，重点练积分技巧"]},
+   lin:{name:"线性代数 · 第3章",tasks:["向量组的线性相关/无关（考试必考）","向量空间、基与维数","线性方程组的解的结构","宋浩视频+教材定义题"]}},
+  {tag:"第三周",tagColor:"#d97706",date:"6/1–6/7",title:"强化刷题",
+   calc:{name:"微积分(2) · 6.6–6.8节",tasks:["6.6极值与拉格朗日乘数法","6.7–6.8二重积分概念与计算","开始做历年真题/模拟卷","归纳常见题型套路，整理公式卡片"]},
+   lin:{name:"线性代数 · 查漏补缺",tasks:["回看错题，弱项专项强化","做线代模拟题（前三章综合）","整理所有公式到一张A4纸","重点：方程组解结构大题反复练"]}},
+  {tag:"第四周",tagColor:"#dc2626",date:"6/8–6/15",title:"冲刺模拟",
+   calc:{name:"微积分(2) · 全卷冲刺",tasks:["做2-3套完整模拟卷（限时2小时）","考前两天只看公式和错题本","6/14晚：只复习最熟的内容，早睡","确认考试时间地点，准备好文具"]},
+   lin:{name:"线性代数 · 全卷冲刺",tasks:["做2套完整模拟卷（限时2小时）","重点检查矩阵运算步骤是否规范","考前一天只看A4公式纸","两门考试同天，提前规划答题顺序"]}},
+];
+const SCHED_DEFAULT=[
+  {time:"07:30 – 08:30",label:"新知识点 · 看宋浩视频（1小时）",color:"var(--blue-dim)",tc:"var(--blue)"},
+  {time:"21:00 – 22:00",label:"做例题 · 课后习题（1小时）",color:"var(--green-dim)",tc:"var(--green)"},
+  {time:"22:00 – 23:00",label:"整理错题 · AI 答疑（1小时）",color:"var(--amber-dim)",tc:"var(--amber)"},
+  {time:"周末弹性",label:"补回工作日缺失时间 · 可连续4-5h刷题",color:"var(--purple-dim)",tc:"var(--purple)"},
+];
+const GOALS_DEFAULT=["早上7:30 看宋浩视频（新知识点）","晚上21:00 做习题（5题以上）","晚上22:00 整理错题 / AI 答疑","更新知识点清单进度","写今日复习日记"];
+
+// ════════════ SEED DATA (as of 2026-06-07) ════════════
+const SEED_VERSION='v2026-06-07-b';
+const SEED_KP={"lin_0_0":1,"calc_0_0":2,"calc_0_3":2,"calc_0_1":2,"calc_1_0":0,"lin_1_5":1,"calc_0_2":2,"calc_0_4":2};
+const SEED_CHECKINS={
+  "2026-05-17":{checked:true,goals:[false,false,false,false,false],labels:["","","","",""],sessions:[false,false,false]},
+  "2026-05-18":{checked:true,goals:[true,false,false,true,true],labels:["","","","",""],sessions:[false,false,false]},
+  "2026-05-24":{checked:true,goals:[false,true,false,false,true],labels:["","","","",""],sessions:[false,false,false]},
+  "2026-05-25":{checked:true,goals:[false,false,false,true,true],labels:["","","","",""],sessions:[false,false,false]},
+  "2026-05-26":{checked:true,goals:[true,false,false,true,true],labels:["","","","",""],sessions:[false,false,false]},
+  "2026-05-27":{checked:true,goals:[true,false,false,false,true],labels:["","","","",""],sessions:[false,false,false]},
+  "2026-05-28":{checked:true,goals:[true,true,true,true,true],labels:["","","","",""],sessions:[false,false,false]},
+  "2026-05-30":{checked:true,goals:[true,false,false,false,false],labels:["","","","",""],sessions:[false,false,false]},
+  "2026-05-31":{checked:true,goals:[true,true,true,true,true],labels:["16点-17点 重新看课本（5.1不定积分）并且完成课后习题","做微积分的作业（多元函数微积分求极值）","做线性代数的作业（求矩阵的秩）","",""],sessions:[false,false,false]},
+  "2026-06-01":{checked:true,goals:[true,true,false,true,true],labels:["早上7:30 看课本*换元积分法+网课5.4【1.5h】","晚上22:30 分部积分法（0.5h）+整理概念","","",""],sessions:[false,false,false]},
+  "2026-06-07":{checked:true,goals:[false,false,false,false,false],labels:["","","","",""],sessions:[false,false,false]},
+};
+const SEED_DIARIES=[
+  {id:1780807129038,date:"2026-06-02",dateLabel:"6月2日周二",mood:"🙂",summary:"微积分5.6-1",body:"忘了",tags:["平面图形的面积"],hours:"2.5h"},
+  {id:1780807051041,date:"2026-06-04",dateLabel:"6月4日周四",mood:"😤",summary:"微积分5.6-2",body:"忘了。",tags:["旋转体的面积"],hours:"0.5h"},
+  {id:1780806986126,date:"2026-06-05",dateLabel:"6月5日周五",mood:"😤",summary:"微积分5.7",body:"早上看了30min网课\n晚上去蹦迪了",tags:["旋转体的体积"],hours:"0.5h"},
+  {id:1780806712891,date:"2026-06-06",dateLabel:"6月6日周六",mood:"🙂",summary:"微积分5.9-5.11",body:"在飞机上看了三节视频，理解难度比以前下降不少\n到深圳了",tags:["广义积分；伽马贝塔函数"],hours:"1.67h"},
+  {id:1780328962580,date:"2026-06-01",dateLabel:"6月1日周一",mood:"🙂",summary:"微积分5.4-5.5",body:"早起学习了，中午学习了，晚上学习了，还跑了步，加了班，可以的。\n理了一遍积分、微分、导数等等的概念；\n看了1.5节网课。",tags:["分部积分法；换元积分法"],hours:"2.5h"},
+  {id:1780241927230,date:"2026-05-31",dateLabel:"5月31日周日",mood:"🙂",summary:"做习题！复习！",body:"16点-17点 重新看课本（5.1不定积分）并且完成课后习题\n做微积分的作业（多元函数微积分求极值）线性代数（求矩阵的秩）",tags:["多元函数","偏导","极值"],hours:"3h"},
+  {id:1780220442535,date:"2026-05-30",dateLabel:"5月30日周六",mood:"😐",summary:"学习了牛顿-莱布尼兹",body:"一知半解，但是在思考如何提效率。\n比如三分格笔记法、提前预习和集中提问。",tags:["牛顿莱布尼兹公式"],hours:"1h"},
+  {id:1779983472999,date:"2026-05-28",dateLabel:"5月28日周四",mood:"🙂",summary:"微积分5.2 积分上限函数",body:"又了解了导数的意义是啥、以及链式法则（复合函数）",tags:["链式法则","积分上限函数的求导"],hours:"1.5h"},
+  {id:1779895410805,date:"2026-05-27",dateLabel:"5月27日周三",mood:"😤",summary:"微积分5.2 积分上限函数",body:"晚上加班到23：30，没来得及继续学习；\n早上打车来的时候看了30min的网课",tags:["积分上限函数"],hours:"0.5h"},
+  {id:1779812310681,date:"2026-05-26",dateLabel:"5月26日周二",mood:"🙂",summary:"学习了微积分",body:"看完了5.1的宋浩定积分的网课，发现可以拆为：1-预习（知识点的理解）；2-网课（笔记）；3-考点题型回顾。用三个格子去完成笔记。\n发现还是要识记，能画出常见函数的几何图像，这样解题才足够快。\n以及如果想比较有把握的通过考试，还是要预留一定时间去背公式/考点和刷题，这样才能避免紧张而做不完题；那意味着我最好是在回深圳前把两门课程的网课都给刷完。",tags:["定积分的定义与性质","几何意义"],hours:"1.5h"},
+  {id:1779724117198,date:"2026-05-25",dateLabel:"5月25日周一",mood:"😊",summary:"今天开始了微积分的复习",body:"用AI和课本教材预习了5.1定积分的部分，了解了一些数学运算式的含义。",tags:["定积分"],hours:"1h"},
+  {id:1779636370351,date:"2026-05-24",dateLabel:"5月24日周日",mood:"🙂",summary:"今天完成了雨课堂作业",body:"微积分是求偏导函数？不懂。\n线性代数是逆序数，略懂。",tags:[],hours:"1h"},
+  {id:1779119749488,date:"2026-05-18",dateLabel:"5月18日周一",mood:"🙂",summary:"12:30-13:30 线性代数网课 第一章1-2节 day2",body:"二三阶行列式计算\n数组和逆序数\n没来得及刷题",tags:["低阶行列式"],hours:"1h"},
+  {id:1779033433971,date:"2026-05-17",dateLabel:"5月17日周日",mood:"😊",summary:"21:30-24点 开启复习day1",body:"完成微积分&线代作业（并且ai帮忙梳理答题步骤）\n搭建复习看板，ai真牛啊",tags:["链式法则；逆矩阵","矩阵方块"],hours:"2.5h"},
+];
+
+// ════════════ STATE ════════════
+let kpState={},checkins={},diaries=[];
+let calcKP=null,linKP=null,planData=null,schedData=null,goalsData=null;
+let examDate={year:2026,month:6,day:15};
+let kpFilter='all',kpTab='calc',kpEditMode=false;
+let planEditMode=false,activePlanWeek=0,schedEditMode=false,goalsEditMode=false;
+let selectedMood='',_diaryMoodEdit={};
+let calViewYear=new Date().getFullYear(),calViewMonth=new Date().getMonth();
+
+const SESSION_CFG=[
+  {id:'morning',label:'早',emoji:'☀️',color:'#f59e0b',hint:'上午学习打卡'},
+  {id:'noon',   label:'中',emoji:'⚡',color:'#2563eb',hint:'中午学习打卡'},
+  {id:'evening',label:'晚',emoji:'🌙',color:'#16a34a',hint:'晚上学习打卡'},
+];
+
+// ════════════ CLOUD SYNC (JSONBin.io) ════════════
+// ⬇ 上线前把这两行替换成你的真实值（见部署说明）
+const JB_BIN = 'YOUR_BIN_ID_HERE';   // 例如: 6649a3f...
+const JB_KEY = 'YOUR_API_KEY_HERE';  // 例如: $2a$10$abc...
+// ─────────────────────────────────────────────────
+const CLOUD_ON = JB_BIN !== 'YOUR_BIN_ID_HERE' && JB_KEY !== 'YOUR_API_KEY_HERE';
+const JB_URL   = `https://api.jsonbin.io/v3/b/${JB_BIN}`;
+let _cTimer = null;
+
+function cloudStatus(msg, color){
+  const el=document.getElementById('cloud-status');
+  if(el){el.textContent=msg;el.style.color=color||'var(--text3)';}
+}
+async function cloudSave(){
+  if(!CLOUD_ON) return;
+  try{
+    const payload={kpState,checkins,diaries,calcKP,linKP,planData,schedData,goalsData,examDate,_ts:Date.now()};
+    const r=await fetch(JB_URL,{method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JB_KEY,'X-Bin-Versioning':'false'},
+      body:JSON.stringify(payload)});
+    cloudStatus(r.ok?'☁ 已同步':'☁ 失败', r.ok?'var(--green)':'var(--red)');
+  }catch(e){cloudStatus('☁ 离线','var(--text3)');}
+}
+async function cloudLoad(){
+  if(!CLOUD_ON) return null;
+  try{
+    cloudStatus('☁ 加载…');
+    const r=await fetch(JB_URL,{headers:{'X-Master-Key':JB_KEY,'X-Bin-Meta':false}});
+    if(!r.ok) return null;
+    const j=await r.json();
+    return j.record||null;
+  }catch(e){cloudStatus('☁ 离线');return null;}
+}
+function scheduleCloudSave(){
+  if(!CLOUD_ON){cloudStatus('☁ 本地');return;}
+  clearTimeout(_cTimer);
+  cloudStatus('☁ 待同步…');
+  _cTimer=setTimeout(cloudSave,3000);
+}
+
+// ════════════ PERSIST ════════════
+function saveAll(){
+  const items={v2_kpState:kpState,v2_checkins:checkins,v2_diaries:diaries,
+    v2_calcKP:calcKP,v2_linKP:linKP,v2_plan:planData,v2_sched:schedData,v2_goals:goalsData,v2_examDate:examDate};
+  for(const[k,v]of Object.entries(items))try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
+  scheduleCloudSave();
+}
+function lp(key,def){try{const r=localStorage.getItem(key);if(r===null)return def;const p=JSON.parse(r);return p!=null?p:def;}catch(e){return def;}}
+function loadAll(){
+  const sv=localStorage.getItem('seed_version');
+  if(sv!==SEED_VERSION){
+    kpState=JSON.parse(JSON.stringify(SEED_KP));checkins=JSON.parse(JSON.stringify(SEED_CHECKINS));
+    diaries=JSON.parse(JSON.stringify(SEED_DIARIES));examDate={year:2026,month:6,day:15};
+    calcKP=JSON.parse(JSON.stringify(CALC_KP_DEFAULT));linKP=JSON.parse(JSON.stringify(LIN_KP_DEFAULT));
+    planData=JSON.parse(JSON.stringify(PLAN_DEFAULT));schedData=JSON.parse(JSON.stringify(SCHED_DEFAULT));
+    goalsData=JSON.parse(JSON.stringify(GOALS_DEFAULT));
+    localStorage.setItem('seed_version',SEED_VERSION);normaliseCheckins();saveAll();return;
+  }
+  kpState  =lp('v2_kpState',SEED_KP);checkins =lp('v2_checkins',SEED_CHECKINS);
+  diaries  =lp('v2_diaries',SEED_DIARIES);examDate=lp('v2_examDate',{year:2026,month:6,day:15});
+  calcKP   =lp('v2_calcKP',null)||JSON.parse(JSON.stringify(CALC_KP_DEFAULT));
+  linKP    =lp('v2_linKP',null) ||JSON.parse(JSON.stringify(LIN_KP_DEFAULT));
+  planData =lp('v2_plan',null)  ||JSON.parse(JSON.stringify(PLAN_DEFAULT));
+  schedData=lp('v2_sched',null) ||JSON.parse(JSON.stringify(SCHED_DEFAULT));
+  goalsData=lp('v2_goals',null) ||JSON.parse(JSON.stringify(GOALS_DEFAULT));
+  normaliseCheckins();
+}
+function normaliseCheckins(){
+  Object.keys(checkins).forEach(k=>{
+    const e=checkins[k];
+    if(!e.labels)e.labels=[];if(!e.sessions)e.sessions=[false,false,false];
+    while(e.goals.length<goalsData.length)e.goals.push(false);
+    while(e.labels.length<goalsData.length)e.labels.push('');
+    e.goals=e.goals.slice(0,goalsData.length);e.labels=e.labels.slice(0,goalsData.length);
+  });
+}
+function ensureCheckinEntry(k){
+  if(!checkins[k])checkins[k]={checked:false,goals:[],labels:[],sessions:[false,false,false]};
+  if(!checkins[k].labels)checkins[k].labels=[];
+  if(!checkins[k].sessions)checkins[k].sessions=[false,false,false];
+  while(checkins[k].goals.length<goalsData.length)checkins[k].goals.push(false);
+  while(checkins[k].labels.length<goalsData.length)checkins[k].labels.push('');
+  checkins[k].goals=checkins[k].goals.slice(0,goalsData.length);
+  checkins[k].labels=checkins[k].labels.slice(0,goalsData.length);
+}
+
+function getKPData(tab){return tab==='calc'?calcKP:linKP;}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseHours(s){if(!s)return 0;const m=String(s).match(/[\d.]+/);return m?parseFloat(m[0]):0;}
+function dateKey(y,m,d){return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+
+// ════════════ NAV ════════════
+function nav(sec){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  const map={overview:0,checklist:1,plan:2,checkin:3,diary:4};
+  document.querySelectorAll('.nav-item')[map[sec]].classList.add('active');
+  if(sec==='checkin'){renderCheckinCal();renderCheckinHero();}
+  if(sec==='diary')renderDiaryList();
+  if(sec==='overview'){renderOverviewCal();renderOverviewOrbs();}
+}
+
+// ════════════ COUNTDOWN ════════════
+function updateCountdown(){
+  const diff=new Date(examDate.year,examDate.month-1,examDate.day,8,0,0)-new Date();
+  if(diff<=0){['cd-d','cd-h','cd-m'].forEach(id=>document.getElementById(id).textContent='0');return;}
+  document.getElementById('cd-d').textContent=Math.floor(diff/86400000);
+  document.getElementById('cd-h').textContent=String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
+  document.getElementById('cd-m').textContent=String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+}
+function updateExamLabels(){
+  document.getElementById('cd-exam-labels').innerHTML=
+    `<span class="exam-badge calc">微积分 ${examDate.month}/${examDate.day}</span>`+
+    `<span class="exam-badge lin">线代 ${examDate.month}/${examDate.day}</span>`;
+}
+function editExamDate(){
+  const cur=`${examDate.year}-${String(examDate.month).padStart(2,'0')}-${String(examDate.day).padStart(2,'0')}`;
+  const val=prompt('请输入考试日期（YYYY-MM-DD）：',cur);if(!val)return;
+  const m=val.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m){showToast('格式不正确');return;}
+  examDate={year:+m[1],month:+m[2],day:+m[3]};saveAll();updateCountdown();updateExamLabels();
+  document.getElementById('overview-date').textContent=overviewDateStr();showToast('考试日期已更新 ✓');
+}
+function overviewDateStr(){
+  const now=new Date();const days=Math.ceil((new Date(examDate.year,examDate.month-1,examDate.day)-now)/86400000);
+  return now.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'})+` · 距 ${examDate.month}月${examDate.day}日 ${Math.max(0,days)} 天`;
+}
+
+// ════════════ ORBS ════════════
+function buildOrbSVG(cfg,done,rowId,si){
+  const c=cfg.color,circ=2*Math.PI*37;
+  return`<svg class="orb-svg ${done?'orb-done':''}" viewBox="0 0 88 88"
+    onclick="tapOrb('${rowId}',${si})" title="${cfg.hint}">
+    <defs>
+      <radialGradient id="og${rowId}${si}" cx="50%" cy="40%">
+        <stop offset="0%" stop-color="${c}" stop-opacity=".25"/>
+        <stop offset="100%" stop-color="${c}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="44" cy="44" r="38" fill="url(#og${rowId}${si})" opacity="${done?1:0}" style="transition:opacity .3s"/>
+    <circle cx="44" cy="44" r="18" fill="none" stroke="${c}" stroke-width="1.5"
+      opacity="${done?.15:0}" class="orb-pulse-ring"/>
+    <circle cx="44" cy="44" r="37" fill="none" stroke="#e4e6ec" stroke-width="6"/>
+    <circle cx="44" cy="44" r="37" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round"
+      stroke-dasharray="${circ}" stroke-dashoffset="${done?0:circ}"
+      transform="rotate(-90 44 44)" style="transition:stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)"/>
+    <circle cx="44" cy="44" r="30" fill="${done?c:'#f0f1f4'}" opacity="${done?.15:.6}" style="transition:fill .3s"/>
+    <text x="44" y="44" class="orb-icon" fill="${done?c:'#8a90aa'}"
+      dominant-baseline="central" text-anchor="middle" font-size="${done?22:18}">${done?cfg.emoji:cfg.label}</text>
+    <circle cx="44" cy="44" r="0" fill="${c}" opacity="0" id="rpl-${rowId}-${si}"/>
+  </svg>`;
+}
+function renderOrbs(rowEl,dateEl,btnEl,k){
+  ensureCheckinEntry(k);const sessions=checkins[k].sessions||[false,false,false];const done=checkins[k].checked;
+  if(dateEl)dateEl.textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  rowEl.innerHTML=SESSION_CFG.map((cfg,si)=>`
+    <div class="orb-wrap">
+      ${buildOrbSVG(cfg,sessions[si],rowEl.id,si)}
+      <div class="orb-label" style="color:${sessions[si]?cfg.color:'var(--text3)'}">${sessions[si]?'✓ 已记录':cfg.hint}</div>
+    </div>`).join('');
+  if(btnEl){btnEl.textContent=done?'✓ 今日已打卡':'✦ 今日打卡';btnEl.className='checkin-main-btn'+(done?' checked':'');}
+}
+function tapOrb(rowId,si){
+  const k=todayKey();ensureCheckinEntry(k);
+  checkins[k].sessions[si]=!checkins[k].sessions[si];
+  const rpl=document.getElementById(`rpl-${rowId}-${si}`);
+  if(rpl&&checkins[k].sessions[si]){rpl.style.animation='none';void rpl.offsetWidth;rpl.style.animation='ripple-out .6s ease-out forwards';}
+  saveAll();
+  if(document.getElementById('sec-overview').classList.contains('active'))renderOverviewOrbs();
+  if(document.getElementById('sec-checkin').classList.contains('active'))
+    renderOrbs(document.getElementById('checkin-orbs-row'),document.getElementById('checkin-page-date'),document.getElementById('checkin-page-btn'),k);
+  showToast(checkins[k].sessions[si]?`${SESSION_CFG[si].label}段学习已记录 ${SESSION_CFG[si].emoji}`:`已取消${SESSION_CFG[si].label}段记录`);
+}
+function renderOverviewOrbs(){
+  const k=todayKey();
+  renderOrbs(document.getElementById('orbs-row'),document.getElementById('overview-checkin-date'),document.getElementById('overview-checkin-btn'),k);
+  const streak=calcStreak();
+  document.getElementById('ov-flame').textContent=streak>=7?'🔥':streak>=3?'⚡':'🎯';
+  document.getElementById('ov-streak').textContent=streak;
+  ensureCheckinEntry(k);
+  document.getElementById('ov-goals-done').textContent=(checkins[k].goals||[]).filter(Boolean).length+'/'+goalsData.length;
+  document.getElementById('ov-total-hours').textContent=diaries.reduce((s,d)=>s+parseHours(d.hours),0).toFixed(1)+'h';
+}
+function doCheckin(){
+  const k=todayKey();if(checkins[k]?.checked)return;
+  ensureCheckinEntry(k);checkins[k].checked=true;
+  saveAll();renderOverviewOrbs();renderCheckinHero();renderOverviewCal();renderCheckinCal();renderSidebarStreak();
+  showToast('🎉 今日打卡成功！加油');
+}
+
+// ════════════ TIME CHART ════════════
+const BAR_COLORS=[['#16a34a','#4ade80'],['#2563eb','#60a5fa'],['#d97706','#fbbf24'],['#7c3aed','#a78bfa'],['#dc2626','#f87171'],['#0891b2','#22d3ee']];
+function renderTimeChart(){
+  const data=[...diaries].reverse();
+  if(!data.length){document.getElementById('time-chart-bars').innerHTML='<div style="padding:20px;font-size:13px;color:var(--text3)">写日记并记录时长后，这里会显示图表</div>';return;}
+  const maxH=Math.max(...data.map(d=>parseHours(d.hours)),1);
+  const total=data.reduce((s,d)=>s+parseHours(d.hours),0);
+  document.getElementById('time-chart-bars').innerHTML=data.map((d,i)=>{
+    const h=parseHours(d.hours);const pct=Math.max(h/maxH,h>0?0.04:0)*100;
+    const[c1,c2]=BAR_COLORS[i%BAR_COLORS.length];
+    const label=(d.dateLabel||d.date).replace(/周./,'').replace('日','').slice(-4);
+    return`<div class="time-bar-col">
+      <div class="time-tooltip">${d.mood||''} ${d.dateLabel||d.date}<br><b>${h}h</b><br>${esc((d.summary||'').slice(0,20))}</div>
+      <div class="time-bar" style="height:${pct}%;background:linear-gradient(180deg,${c2},${c1})">
+        <div class="time-bar-label">${label}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('time-chart-total').textContent=`累计 ${total.toFixed(1)}h · 目标 90h · 已完成 ${Math.round(total/90*100)}%`;
+}
+
+// ════════════ PROGRESS ════════════
+function kpKey(tab,ci,ii){return`${tab}_${ci}_${ii}`;}
+function kpGet(tab,ci,ii){return kpState[kpKey(tab,ci,ii)]||0;}
+function updateProgress(){
+  ['calc','lin'].forEach(tab=>{
+    const data=getKPData(tab);let total=0,done=0,partial=0;
+    data.forEach((ch,ci)=>ch.items.forEach((_,ii)=>{total++;const s=kpGet(tab,ci,ii);if(s===2)done++;else if(s===1)partial++;}));
+    const pct=total?Math.round(((done+partial*.5)/total)*100):0;
+    document.getElementById(tab+'-pct').textContent=pct+'%';
+    document.getElementById(tab+'-bar').style.width=pct+'%';
+    document.getElementById(tab+'-sub').textContent=`共 ${total} 个知识点，${done} 项已掌握，${partial} 项看过`;
+    document.getElementById('tb-'+tab).textContent=(tab==='calc'?'微积分 ':'线代 ')+pct+'%';
+  });
+}
+
+// ════════════ CHECKLIST ════════════
+function kpCycle(tab,ci,ii){const k=kpKey(tab,ci,ii);kpState[k]=((kpState[k]||0)+1)%3;saveAll();renderKP();updateProgress();}
+function renderKP(){
+  ['calc','lin'].forEach(tab=>{
+    const data=getKPData(tab);const el=document.getElementById('kp-'+tab);
+    const color=tab==='calc'?'var(--green)':'var(--blue)';let html='';
+    data.forEach((ch,ci)=>{
+      let done=0,partial=0;
+      ch.items.forEach((_,ii)=>{const s=kpGet(tab,ci,ii);if(s===2)done++;else if(s===1)partial++;});
+      const pct=ch.items.length?Math.round(((done+partial*.5)/ch.items.length)*100):0;
+      const isOpen=kpFilter!=='all'||kpEditMode;
+      const chTitle=kpEditMode?`<input class="edit-input" style="flex:1;margin:0" value="${esc(ch.ch)}" onclick="event.stopPropagation()" onchange="getKPData('${tab}')[${ci}].ch=this.value;saveAll()">`:`<span class="ch-title-text">${ch.ch}</span>`;
+      const chNote=kpEditMode?`<div style="padding:6px 16px 8px"><input class="edit-input sm" value="${esc(ch.note||'')}" placeholder="章节备注" onchange="getKPData('${tab}')[${ci}].note=this.value;saveAll()"></div>`:(ch.note?`<div class="ch-note">${ch.note}</div>`:'');
+      const items=ch.items.map((item,ii)=>{
+        if(!kpEditMode&&kpFilter==='undone'&&kpGet(tab,ci,ii)===2)return'';
+        if(!kpEditMode&&kpFilter==='high'&&item.f!=='high')return'';
+        const s=kpGet(tab,ci,ii);const cbCls=s===2?'done':s===1?'partial':'';const cbTxt=s===2?'✓':s===1?'~':'';
+        if(kpEditMode)return`<div class="kp-item kp-item-edit">
+          <div class="kp-cb ${cbCls}" style="cursor:pointer" onclick="kpCycle('${tab}',${ci},${ii})">${cbTxt}</div>
+          <div class="kp-body" style="flex:1;display:flex;flex-direction:column;gap:5px">
+            <input class="edit-input" value="${esc(item.t)}" placeholder="知识点名称" onchange="getKPData('${tab}')[${ci}].items[${ii}].t=this.value;saveAll();updateProgress()">
+            <input class="edit-input sm" value="${esc(item.sub)}" placeholder="考点描述" onchange="getKPData('${tab}')[${ci}].items[${ii}].sub=this.value;saveAll()">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0">
+            <select class="edit-select" onchange="getKPData('${tab}')[${ci}].items[${ii}].f=this.value;saveAll();renderKP()">
+              <option value="high" ${item.f==='high'?'selected':''}>高频</option>
+              <option value="mid"  ${item.f==='mid' ?'selected':''}>中频</option>
+              <option value="low"  ${item.f==='low' ?'selected':''}>低频</option>
+            </select>
+            <button class="edit-del-btn" onclick="kpDeleteItem('${tab}',${ci},${ii})">✕ 删除</button>
+          </div>
+        </div>`;
+        return`<div class="kp-item" onclick="kpCycle('${tab}',${ci},${ii})">
+          <div class="kp-cb ${cbCls}">${cbTxt}</div>
+          <div class="kp-body"><div class="kp-name ${s===2?'done':''}">${item.t}</div><div class="kp-sub">${item.sub}</div></div>
+          <span class="freq-badge freq-${item.f}">${item.f==='high'?'高频':item.f==='mid'?'中频':'低频'}</span>
+        </div>`;
+      }).join('');
+      const visible=!kpEditMode&&ch.items.filter((_,ii)=>{
+        if(kpFilter==='undone'&&kpGet(tab,ci,ii)===2)return false;
+        if(kpFilter==='high'&&_.f!=='high')return false;return true;
+      }).length===0;
+      const empty=visible?`<div style="padding:12px 16px;font-size:12px;color:var(--text3)">该筛选下没有条目</div>`:'';
+      const addBtn=kpEditMode?`<div style="padding:8px 16px"><button class="add-row-btn" onclick="kpAddItem('${tab}',${ci})">＋ 添加知识点</button></div>`:'';
+      html+=`<div class="chapter-block">
+        <div class="ch-header" onclick="toggleCh('${tab}${ci}')">
+          <span class="ch-arrow ${isOpen?'open':''}" id="arr-${tab}${ci}">▶</span>${chTitle}
+          <span class="ch-stats">${done}/${ch.items.length}</span>
+          <div class="mini-prog"><div class="mini-prog-fill" style="width:${pct}%;background:${color}"></div></div>
+        </div>${chNote}
+        <div class="ch-items ${isOpen?'open':''}" id="chi-${tab}${ci}">${empty}${items}${addBtn}</div>
+      </div>`;
+    });
+    if(kpEditMode)html+=`<button class="add-row-btn" style="margin-top:4px" onclick="kpAddChapter('${tab}')">＋ 添加章节</button>`;
+    el.innerHTML=html;
+  });
+}
+function kpDeleteItem(tab,ci,ii){
+  if(!confirm('删除这个知识点？'))return;
+  const data=getKPData(tab);data[ci].items.splice(ii,1);
+  const ns={};Object.keys(kpState).forEach(k=>{if(!k.startsWith(`${tab}_${ci}_`))ns[k]=kpState[k];});
+  data[ci].items.forEach((_,i)=>{const old=kpState[`${tab}_${ci}_${i>=ii?i+1:i}`];if(old!==undefined)ns[`${tab}_${ci}_${i}`]=old;});
+  kpState=ns;saveAll();renderKP();updateProgress();
+}
+function kpAddItem(tab,ci){getKPData(tab)[ci].items.push({t:'新知识点',sub:'请修改说明',f:'mid'});saveAll();renderKP();}
+function kpAddChapter(tab){getKPData(tab).push({ch:'新章节',note:'',items:[]});saveAll();renderKP();}
+function toggleKPEdit(){
+  kpEditMode=!kpEditMode;const btn=document.getElementById('kp-edit-btn');const bar=document.getElementById('kp-filter-bar');
+  if(kpEditMode){btn.textContent='✓ 完成编辑';btn.classList.add('btn-done');btn.classList.remove('btn-edit');bar.style.opacity='.35';bar.style.pointerEvents='none';}
+  else{btn.textContent='✎ 编辑清单';btn.classList.remove('btn-done');btn.classList.add('btn-edit');bar.style.opacity='1';bar.style.pointerEvents='auto';saveAll();updateProgress();showToast('知识点清单已保存 ✓');}
+  renderKP();
+}
+function resetKPData(){if(!confirm('重置为默认知识点列表？'))return;calcKP=JSON.parse(JSON.stringify(CALC_KP_DEFAULT));linKP=JSON.parse(JSON.stringify(LIN_KP_DEFAULT));saveAll();renderKP();updateProgress();showToast('已重置');}
+function toggleCh(id){const el=document.getElementById('chi-'+id);const arr=document.getElementById('arr-'+id);if(!el)return;el.classList.toggle('open');arr.classList.toggle('open');}
+function filterKP(f,btn){if(kpEditMode)return;kpFilter=f;document.querySelectorAll('#kp-filter-bar .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderKP();}
+function switchKPTab(tab,btn){kpTab=tab;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('kp-calc').style.display=tab==='calc'?'block':'none';document.getElementById('kp-lin').style.display=tab==='lin'?'block':'none';}
+function expandAllCh(){document.querySelectorAll('.ch-items').forEach(e=>e.classList.add('open'));document.querySelectorAll('.ch-arrow').forEach(e=>e.classList.add('open'));}
+function collapseAllCh(){document.querySelectorAll('.ch-items').forEach(e=>e.classList.remove('open'));document.querySelectorAll('.ch-arrow').forEach(e=>e.classList.remove('open'));}
+
+// ════════════ SCHEDULE ════════════
+const SC=[{c:'var(--blue-dim)',t:'var(--blue)',l:'蓝'},{c:'var(--green-dim)',t:'var(--green)',l:'绿'},{c:'var(--amber-dim)',t:'var(--amber)',l:'橙'},{c:'var(--purple-dim)',t:'var(--purple)',l:'紫'},{c:'var(--red-dim)',t:'var(--red)',l:'红'}];
+function renderSched(){document.getElementById('sched-view').innerHTML=`<div class="daily-sched">${schedData.map(r=>`<div class="sched-row"><div class="sched-time">${r.time}</div><div class="sched-bar" style="background:${r.color};color:${r.tc}">${r.label}</div></div>`).join('')}</div>`;}
+function renderSchedEdit(){document.getElementById('sched-edit').innerHTML=`<div class="edit-toolbar">✎ 修改后点「完成编辑」保存</div><div>${schedData.map((r,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><input class="edit-input" style="width:110px;flex-shrink:0" value="${esc(r.time)}" onchange="schedData[${i}].time=this.value;saveAll()"><input class="edit-input" style="flex:1" value="${esc(r.label)}" onchange="schedData[${i}].label=this.value;saveAll()"><select class="edit-select" onchange="const o=JSON.parse(this.value);schedData[${i}].color=o.c;schedData[${i}].tc=o.t;saveAll()">${SC.map(c=>`<option value='${JSON.stringify({c:c.c,t:c.t})}' ${r.color===c.c?'selected':''}>${c.l}</option>`).join('')}</select><button class="edit-del-btn" onclick="schedData.splice(${i},1);saveAll();renderSchedEdit();renderSched()">✕</button></div>`).join('')}<button class="add-row-btn" onclick="schedData.push({time:'新时段',label:'描述',color:'var(--blue-dim)',tc:'var(--blue)'});saveAll();renderSchedEdit();renderSched()">＋ 添加</button></div>`;}
+function toggleSchedEdit(){schedEditMode=!schedEditMode;const btn=document.getElementById('sched-edit-btn');document.getElementById('sched-view').style.display=schedEditMode?'none':'block';document.getElementById('sched-edit').style.display=schedEditMode?'block':'none';if(schedEditMode){btn.textContent='✓ 完成编辑';btn.classList.add('btn-done');btn.classList.remove('btn-edit');renderSchedEdit();}else{btn.textContent='✎ 编辑';btn.classList.remove('btn-done');btn.classList.add('btn-edit');renderSched();saveAll();showToast('时间安排已保存 ✓');}}
+
+// ════════════ PLAN ════════════
+function renderPlan(){
+  document.getElementById('plan-weeks').innerHTML=planData.map((p,i)=>`<div class="plan-week ${i===activePlanWeek?'active':''}" onclick="selectPlanWeek(${i})">${planEditMode?`<input class="edit-input" style="margin-bottom:4px" value="${esc(p.tag)}" onclick="event.stopPropagation()" onchange="planData[${i}].tag=this.value;saveAll()"><input class="edit-input sm" value="${esc(p.date)}" onclick="event.stopPropagation()" onchange="planData[${i}].date=this.value;saveAll()">`:`<span class="pw-tag" style="background:${p.tagColor}22;color:${p.tagColor}">${p.tag}</span><div class="pw-title">${p.title}</div><div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:2px">${p.date}</div>`}</div>`).join('');
+  const p=planData[activePlanWeek];if(!p){document.getElementById('plan-detail-area').innerHTML='';return;}
+  if(planEditMode){
+    document.getElementById('plan-detail-area').innerHTML=`<div class="edit-toolbar">✎ 编辑当前周任务</div><div class="plan-detail-grid"><div class="plan-subject"><div class="ps-label" style="color:var(--green)">微积分(2)</div><input class="edit-input" value="${esc(p.calc.name)}" style="font-weight:500;margin-bottom:10px" onchange="planData[${activePlanWeek}].calc.name=this.value;saveAll()">${p.calc.tasks.map((t,ti)=>`<div style="display:flex;gap:6px;margin-bottom:7px;align-items:center"><input class="edit-input sm" style="flex:1" value="${esc(t)}" onchange="planData[${activePlanWeek}].calc.tasks[${ti}]=this.value;saveAll()"><button class="edit-del-btn" onclick="planData[${activePlanWeek}].calc.tasks.splice(${ti},1);saveAll();renderPlan()">✕</button></div>`).join('')}<button class="add-row-btn" onclick="planData[${activePlanWeek}].calc.tasks.push('新任务');saveAll();renderPlan()">＋ 添加</button></div><div class="plan-subject"><div class="ps-label" style="color:var(--blue)">线性代数</div><input class="edit-input" value="${esc(p.lin.name)}" style="font-weight:500;margin-bottom:10px" onchange="planData[${activePlanWeek}].lin.name=this.value;saveAll()">${p.lin.tasks.map((t,ti)=>`<div style="display:flex;gap:6px;margin-bottom:7px;align-items:center"><input class="edit-input sm" style="flex:1" value="${esc(t)}" onchange="planData[${activePlanWeek}].lin.tasks[${ti}]=this.value;saveAll()"><button class="edit-del-btn" onclick="planData[${activePlanWeek}].lin.tasks.splice(${ti},1);saveAll();renderPlan()">✕</button></div>`).join('')}<button class="add-row-btn" onclick="planData[${activePlanWeek}].lin.tasks.push('新任务');saveAll();renderPlan()">＋ 添加</button></div></div>`;
+  }else{
+    document.getElementById('plan-detail-area').innerHTML=`<div class="plan-detail-grid"><div class="plan-subject"><div class="ps-label" style="color:var(--green)">微积分(2)</div><div class="ps-name">${p.calc.name}</div><ul class="ps-tasks">${p.calc.tasks.map(t=>`<li>${t}</li>`).join('')}</ul></div><div class="plan-subject"><div class="ps-label" style="color:var(--blue)">线性代数</div><div class="ps-name">${p.lin.name}</div><ul class="ps-tasks">${p.lin.tasks.map(t=>`<li>${t}</li>`).join('')}</ul></div></div>`;
+  }
+}
+function selectPlanWeek(i){activePlanWeek=i;renderPlan();}
+function togglePlanEdit(){planEditMode=!planEditMode;const btn=document.getElementById('plan-edit-btn');if(planEditMode){btn.textContent='✓ 完成编辑';btn.classList.add('btn-done');btn.classList.remove('btn-edit');}else{btn.textContent='✎ 编辑计划';btn.classList.remove('btn-done');btn.classList.add('btn-edit');saveAll();showToast('复习计划已保存 ✓');}renderPlan();}
+
+// ════════════ GOALS ════════════
+function renderGoalsList(){
+  const k=todayKey();ensureCheckinEntry(k);
+  document.getElementById('daily-goals-list').innerHTML=goalsData.map((g,i)=>{
+    const checked=checkins[k].goals[i];const dayLabel=checkins[k].labels[i]||'';const display=dayLabel||g;
+    return`<div class="goal-row-wrap">
+      <div class="kp-cb ${checked?'done':''}" style="flex-shrink:0;cursor:pointer;margin-top:2px" onclick="toggleGoal('${k}',${i})">${checked?'✓':''}</div>
+      <div class="goal-inline-text ${checked?'done':''}" contenteditable="true" spellcheck="false"
+        onblur="saveGoalLabel('${k}',${i},this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        title="点击直接编辑今日实际内容">${esc(display)}</div>
+      ${dayLabel?`<button class="goal-reset-btn" onclick="resetGoalLabel('${k}',${i})" title="恢复默认">↺</button>`:''}
+    </div>`;
+  }).join('');
+}
+function saveGoalLabel(k,i,el){const text=el.innerText.trim();ensureCheckinEntry(k);checkins[k].labels[i]=(text===(goalsData[i]||''))?'':text;saveAll();renderGoalsList();}
+function resetGoalLabel(k,i){ensureCheckinEntry(k);checkins[k].labels[i]='';saveAll();renderGoalsList();}
+function renderGoalsEdit(){
+  document.getElementById('daily-goals-edit').innerHTML=`<div class="edit-toolbar">✎ 编辑默认目标模板（每天新打卡时的默认文字）</div><div>${goalsData.map((g,i)=>`<div style="display:flex;gap:8px;margin-bottom:7px;align-items:center"><input class="edit-input" style="flex:1" value="${esc(g)}" onchange="goalsData[${i}]=this.value;saveAll()"><button class="edit-del-btn" onclick="goalsData.splice(${i},1);saveAll();renderGoalsEdit();renderGoalsList()">✕</button></div>`).join('')}<button class="add-row-btn" onclick="goalsData.push('新目标');saveAll();renderGoalsEdit();renderGoalsList()">＋ 添加目标</button></div>`;
+}
+function toggleGoalsEdit(){
+  goalsEditMode=!goalsEditMode;const btn=document.getElementById('goals-edit-btn');
+  document.getElementById('daily-goals-list').style.display=goalsEditMode?'none':'block';
+  document.getElementById('daily-goals-edit').style.display=goalsEditMode?'block':'none';
+  if(goalsEditMode){btn.textContent='✓ 完成编辑';btn.classList.add('btn-done');btn.classList.remove('btn-edit');renderGoalsEdit();}
+  else{btn.textContent='✎ 编辑模板';btn.classList.remove('btn-done');btn.classList.add('btn-edit');saveAll();renderGoalsList();showToast('目标模板已保存 ✓');}
+}
+function toggleGoal(k,i){ensureCheckinEntry(k);checkins[k].goals[i]=!checkins[k].goals[i];saveAll();renderGoalsList();}
+
+// ════════════ CALENDAR ════════════
+const MONTH_NAMES=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+function prevCalMonth(){
+  if(calViewMonth===0){calViewMonth=11;calViewYear--;}else calViewMonth--;
+  renderCheckinCal();
+}
+function nextCalMonth(){
+  const now=new Date();if(calViewYear===now.getFullYear()&&calViewMonth>=now.getMonth())return;
+  if(calViewMonth===11){calViewMonth=0;calViewYear++;}else calViewMonth++;
+  renderCheckinCal();
+}
+function gotoCurrentMonth(){const now=new Date();calViewYear=now.getFullYear();calViewMonth=now.getMonth();renderCheckinCal();}
+
+// Render a single calendar grid (overview = current month, no makeup; checkin = calView month, with makeup)
+function renderCalGrid(gridId, labelsId, year, month, interactive){
+  const todayStr=todayKey();
+  const firstDay=new Date(year,month,1).getDay();const dim=new Date(year,month+1,0).getDate();
+  const labels=['日','一','二','三','四','五','六'];
+  const lel=document.getElementById(labelsId);if(lel)lel.innerHTML=labels.map(l=>`<span>${l}</span>`).join('');
+  const el=document.getElementById(gridId);if(!el)return;
+  let html='';
+  for(let i=0;i<firstDay;i++)html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=dim;d++){
+    const key=dateKey(year,month+1,d);
+    const entry=checkins[key];const isToday=key===todayStr;const isPastOrToday=key<=todayStr;
+    let cls='cal-day',onclick='';
+    if(entry?.checked){
+      const gd=(entry.goals||[]).filter(Boolean).length;
+      cls+=' '+(gd>=4?'level-3':gd>=2?'level-2':'level-1')+' has-entry';
+      onclick=`onclick="openDayModal('${key}')" title="${month+1}月${d}日 ✓ 点击查看/编辑"`;
+    }else if(isPastOrToday&&interactive){
+      cls+=' makeup-avail';
+      onclick=`onclick="openDayModal('${key}')" title="${month+1}月${d}日 · 点击补签"`;
+    }else if(isPastOrToday&&!interactive){
+      // overview: past unchecked days are subtly clickable too
+      cls+=' has-entry';
+      onclick=`onclick="openDayModal('${key}')" title="${month+1}月${d}日"`;
+    }
+    if(isToday)cls+=' today-mark';
+    html+=`<div class="${cls}" ${onclick}>${d}</div>`;
+  }
+  el.innerHTML=html;
+}
+
+function renderOverviewCal(){
+  const now=new Date();renderCalGrid('cal-grid','cal-week-labels',now.getFullYear(),now.getMonth(),false);
+}
+
+function renderCheckinCal(){
+  const now=new Date();const curY=now.getFullYear(),curM=now.getMonth();
+  const isCurrentMonth=(calViewYear===curY&&calViewMonth===curM);
+  // Update nav UI
+  const navLabel=document.getElementById('checkin-nav-label');
+  if(navLabel)navLabel.textContent=`${calViewYear}年 ${MONTH_NAMES[calViewMonth]}`;
+  const nextBtn=document.getElementById('checkin-next-btn');
+  if(nextBtn)nextBtn.disabled=isCurrentMonth;
+  const gotoBtn=document.getElementById('checkin-goto-today');
+  if(gotoBtn)gotoBtn.style.display=isCurrentMonth?'none':'inline';
+  // Streak info
+  const streak=calcStreak();
+  const el=document.getElementById('streak-count');if(el)el.textContent=streak;
+  const md=Object.keys(checkins).filter(k=>k.startsWith(curY+'-'+String(curM+1).padStart(2,'0'))&&checkins[k]?.checked).length;
+  const mc=document.getElementById('month-count');if(mc)mc.textContent=md;
+  renderCalGrid('checkin-cal','checkin-week-labels',calViewYear,calViewMonth,true);
+}
+
+// ════════════ DAY MODAL (editable) ════════════
+function openDayModal(key){
+  const todayStr=todayKey();if(key>todayStr)return;
+  ensureCheckinEntry(key);
+  const[,m,d]=key.split('-');const entry=checkins[key];
+  const checked=entry.checked;const goalsDone=entry.goals.filter(Boolean).length;
+
+  document.getElementById('modal-date-title').innerHTML=
+    `${+m}月${+d}日 &nbsp;<span style="font-size:12px;color:${checked?'var(--green)':'var(--amber)'}">${checked?'✓ 已打卡':'未打卡'}</span>`;
+
+  let html='';
+
+  // Session pills
+  html+=`<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">`;
+  SESSION_CFG.forEach((cfg,si)=>{
+    const done=(entry.sessions||[])[si];
+    html+=`<div class="session-pill" id="mpill-${key}-${si}"
+      onclick="toggleModalSession('${key}',${si})"
+      style="background:${done?cfg.color+'22':'var(--bg3)'};color:${done?cfg.color:'var(--text3)'};border-color:${done?cfg.color:'var(--border)'}">
+      ${cfg.emoji} ${cfg.label}段 ${done?'✓':''}
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // Goals summary
+  html+=`<div style="font-size:11px;color:var(--text3);margin-bottom:10px">完成目标 ${goalsDone}/${goalsData.length}${goalsDone>=4?' 🔥':goalsDone>=2?' 👍':' 💪'} · <span style="color:var(--text3)">点击勾选 · 点击文字可编辑</span></div>`;
+
+  // Editable goal rows
+  html+=`<div>`;
+  html+=goalsData.map((g,i)=>{
+    const checked2=(entry.goals||[])[i];const label=(entry.labels||[])[i]||g;
+    return`<div class="modal-goal-row">
+      <div class="kp-cb ${checked2?'done':''}" style="cursor:pointer;flex-shrink:0" id="mgcb-${key}-${i}"
+        onclick="toggleModalGoal('${key}',${i})">${checked2?'✓':''}</div>
+      <div class="goal-inline-text ${checked2?'done':''}" contenteditable="true" spellcheck="false"
+        id="mglabel-${key}-${i}"
+        onblur="saveModalLabel('${key}',${i},this)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(label)}</div>
+    </div>`;
+  }).join('');
+  html+=`</div>`;
+
+  // Diary entries for this day
+  const dayDiaries=diaries.filter(dv=>dv.date===key);
+  if(dayDiaries.length){
+    html+=`<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;letter-spacing:.05em">当天日记</div>`;
+    dayDiaries.forEach(dv=>{
+      html+=`<div style="background:var(--bg3);border-radius:6px;padding:8px 10px;margin-bottom:6px">
+        <span>${dv.mood||''}</span> <span style="font-size:13px;font-weight:500">${esc(dv.summary||'')}</span>
+        ${dv.hours?`<span style="font-size:11px;color:var(--text3);margin-left:8px">${dv.hours}</span>`:''}
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // Makeup button
+  if(!checked){
+    html+=`<button class="save-btn" style="width:100%;margin-top:14px" onclick="doMakeupCheckin('${key}')">✓ 补签这一天</button>`;
+  }
+
+  document.getElementById('modal-content').innerHTML=html;
+  document.getElementById('day-modal').style.display='flex';
+}
+
+function toggleModalGoal(key,i){
+  ensureCheckinEntry(key);checkins[key].goals[i]=!checkins[key].goals[i];saveAll();
+  const checked=checkins[key].goals[i];
+  const cb=document.getElementById(`mgcb-${key}-${i}`);if(cb){cb.className='kp-cb'+(checked?' done':'');cb.textContent=checked?'✓':'';}
+  const lbl=document.getElementById(`mglabel-${key}-${i}`);if(lbl){lbl.className='goal-inline-text'+(checked?' done':'');}
+  renderCheckinCal();renderOverviewCal();renderSidebarStreak();
+}
+function toggleModalSession(key,si){
+  ensureCheckinEntry(key);if(!checkins[key].sessions)checkins[key].sessions=[false,false,false];
+  checkins[key].sessions[si]=!checkins[key].sessions[si];saveAll();
+  const cfg=SESSION_CFG[si];const done=checkins[key].sessions[si];
+  const pill=document.getElementById(`mpill-${key}-${si}`);
+  if(pill){pill.style.background=done?cfg.color+'22':'var(--bg3)';pill.style.color=done?cfg.color:'var(--text3)';pill.style.borderColor=done?cfg.color:'var(--border)';pill.innerHTML=`${cfg.emoji} ${cfg.label}段 ${done?'✓':''}`;}
+}
+function saveModalLabel(key,i,el){
+  const text=el.innerText.trim();ensureCheckinEntry(key);
+  checkins[key].labels[i]=(text===(goalsData[i]||''))?'':text;saveAll();
+}
+function doMakeupCheckin(key){
+  ensureCheckinEntry(key);checkins[key].checked=true;saveAll();
+  showToast(`${key.slice(5).replace('-','月')}日 补签成功 ✓`);
+  openDayModal(key);// refresh modal
+  renderCheckinCal();renderOverviewCal();renderSidebarStreak();renderOverviewOrbs();
+}
+function closeDayModal(e){if(!e||e.target===document.getElementById('day-modal'))document.getElementById('day-modal').style.display='none';}
+
+// ════════════ CHECK-IN PAGE ════════════
+function calcStreak(){
+  let s=0;const d=new Date();
+  while(true){const k=dateKey(d.getFullYear(),d.getMonth()+1,d.getDate());if(checkins[k]?.checked)s++;else break;d.setDate(d.getDate()-1);}
+  return s;
+}
+function renderCheckinHero(){
+  const k=todayKey();const streak=calcStreak();
+  document.getElementById('tb-streak').innerHTML=`<span>${streak>=7?'🔥':streak>=3?'⚡':'🎯'} 连续 ${streak} 天</span>`;
+  const ciRow=document.getElementById('checkin-orbs-row');
+  if(ciRow)renderOrbs(ciRow,document.getElementById('checkin-page-date'),document.getElementById('checkin-page-btn'),k);
+  renderGoalsList();renderCheckinCal();
+}
+function renderSidebarStreak(){
+  const streak=calcStreak();const now=new Date();const year=now.getFullYear(),month=now.getMonth();
+  const dim=new Date(year,month+1,0).getDate();const todayStr=todayKey();
+  document.getElementById('sidebar-streak').textContent=streak+' 天';
+  let dots='';
+  for(let d=1;d<=Math.min(dim,28);d++){
+    const key=dateKey(year,month+1,d);const isToday=key===todayStr;const done=checkins[key]?.checked;
+    dots+=`<div class="streak-dot ${isToday&&!done?'today':done?'done':''}"></div>`;
+  }
+  document.getElementById('sidebar-dots').innerHTML=dots;
+}
+
+// ════════════ DIARY ════════════
+function selectMood(btn){document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selectedMood=btn.dataset.mood;}
+function updateWordCount(){document.getElementById('word-count').textContent=(document.getElementById('diary-body').value||'').length+' 字';}
+function saveDiaryEntry(){
+  const summary=document.getElementById('diary-summary').value.trim();const body=document.getElementById('diary-body').value.trim();
+  const tags=document.getElementById('diary-tags').value.trim().split(/[，,、]/).map(t=>t.trim()).filter(Boolean);
+  const hours=document.getElementById('diary-hours').value.trim();
+  if(!summary&&!body){showToast('请先写点什么再保存 ✎');return;}
+  const now=new Date();
+  diaries.unshift({id:Date.now(),date:todayKey(),dateLabel:now.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'}),mood:selectedMood||'🙂',summary:summary||'今日复习小结',body,tags,hours});
+  saveAll();['diary-summary','diary-body','diary-tags','diary-hours'].forEach(id=>document.getElementById(id).value='');
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  selectedMood='';updateWordCount();renderDiaryList();renderTimeChart();showToast('日记已保存 ✓');
+}
+function startEditDiary(id){
+  const e=diaries.find(d=>d.id===id);if(!e)return;
+  const card=document.getElementById('de-'+id);card.classList.add('diary-entry-editing');
+  card.innerHTML=`<div style="margin-bottom:8px;font-size:11px;color:var(--amber);font-weight:500">✎ 编辑日记</div>
+    <div class="de-row"><div style="flex:1"><div class="field-label">日期标签</div><input class="de-input" id="dee-label-${id}" value="${esc(e.dateLabel||'')}"></div>
+    <div style="flex:1"><div class="field-label">实际日期 (YYYY-MM-DD)</div><input class="de-input" id="dee-date-${id}" value="${esc(e.date||'')}"></div>
+    <div style="flex:0 0 auto"><div class="field-label">心情</div><div style="display:flex;gap:4px;margin-top:4px">${['😤','😐','🙂','😊','🔥'].map(m=>`<button onclick="setDiaryMood(${id},'${m}',this)" style="font-size:18px;opacity:${e.mood===m?1:.4};cursor:pointer;background:none;border:none;padding:0;transition:opacity .15s">${m}</button>`).join('')}</div></div></div>
+    <div class="field-label">一句话概括</div><input class="de-input" id="dee-summary-${id}" value="${esc(e.summary||'')}" style="margin-bottom:8px">
+    <div class="field-label">详细记录</div><textarea class="de-textarea" id="dee-body-${id}">${(e.body||'').replace(/</g,'&lt;')}</textarea>
+    <div class="de-row"><div style="flex:1"><div class="field-label">标签</div><input class="de-input" id="dee-tags-${id}" value="${esc((e.tags||[]).join(', '))}"></div>
+    <div style="flex:1"><div class="field-label">时长</div><input class="de-input" id="dee-hours-${id}" value="${esc(e.hours||'')}"></div></div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="save-btn" onclick="saveEditDiary(${id})">保存修改</button><button class="entry-btn" onclick="renderDiaryList()">取消</button></div>`;
+}
+function setDiaryMood(id,mood,btn){_diaryMoodEdit[id]=mood;btn.parentElement.querySelectorAll('button').forEach(b=>b.style.opacity=b.textContent===mood?'1':'.4');}
+function saveEditDiary(id){
+  const idx=diaries.findIndex(d=>d.id===id);if(idx<0)return;const e=diaries[idx];
+  e.dateLabel=document.getElementById('dee-label-'+id).value.trim()||e.dateLabel;
+  e.date=document.getElementById('dee-date-'+id).value.trim()||e.date;
+  e.summary=document.getElementById('dee-summary-'+id).value.trim();
+  e.body=document.getElementById('dee-body-'+id).value.trim();
+  e.tags=document.getElementById('dee-tags-'+id).value.trim().split(/[，,、]/).map(t=>t.trim()).filter(Boolean);
+  e.hours=document.getElementById('dee-hours-'+id).value.trim();
+  if(_diaryMoodEdit[id])e.mood=_diaryMoodEdit[id];delete _diaryMoodEdit[id];
+  saveAll();renderDiaryList();renderTimeChart();showToast('日记已更新 ✓');
+}
+function deleteDiary(id){if(!confirm('确认删除？'))return;diaries=diaries.filter(e=>e.id!==id);saveAll();renderDiaryList();renderTimeChart();}
+function renderDiaryList(){
+  document.getElementById('diary-today').textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
+  const list=document.getElementById('diary-list');
+  if(!diaries||!diaries.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">✎</div><div class="empty-text">还没有日记，今天就开始写第一篇吧</div></div>`;return;}
+  list.innerHTML=diaries.map((e,idx)=>`<div class="diary-entry ${e.isThought?'is-thought':''}" id="de-${e.id}"
+    draggable="true"
+    ondragstart="diaryDragStart(event,${idx})"
+    ondragover="diaryDragOver(event,${idx})"
+    ondragleave="diaryDragLeave(event)"
+    ondrop="diaryDrop(event,${idx})"
+    ondragend="diaryDragEnd(event)">
+    <div class="diary-entry-header">
+      <span class="drag-handle" title="拖动排序">⠿</span>
+      <span class="entry-date">${e.dateLabel||''}</span>
+    <div style="display:flex;align-items:center;gap:8px"><span>${e.mood||''}</span>${e.hours?`<span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">${e.hours}</span>`:''}
+    <div class="entry-actions"><button class="entry-btn" onclick="startEditDiary(${e.id})">✎ 编辑</button><button class="entry-btn del" onclick="deleteDiary(${e.id})">✕ 删除</button></div></div></div>
+    <div class="entry-summary">${e.summary||''}</div>
+    ${e.body?`<div class="entry-body">${e.body.replace(/\n/g,'<br>')}</div>`:''}
+    ${e.tags&&e.tags.length?`<div class="entry-tags">${e.tags.map(t=>`<span class="entry-tag">${t}</span>`).join('')}</div>`:''}
+  </div>`).join('');
+}
+
+// ════════════ DIARY DRAG & DROP ════════════
+let _dragIdx=null;
+function diaryDragStart(e,idx){
+  _dragIdx=idx;e.dataTransfer.effectAllowed='move';
+  setTimeout(()=>e.currentTarget.classList.add('dragging'),0);
+}
+function diaryDragOver(e,idx){
+  e.preventDefault();e.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.diary-entry').forEach(el=>el.classList.remove('drag-over'));
+  const cards=document.querySelectorAll('.diary-entry');
+  if(cards[idx])cards[idx].classList.add('drag-over');
+}
+function diaryDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function diaryDrop(e,idx){
+  e.preventDefault();
+  document.querySelectorAll('.diary-entry').forEach(el=>el.classList.remove('drag-over','dragging'));
+  if(_dragIdx===null||_dragIdx===idx){_dragIdx=null;return;}
+  const moved=diaries.splice(_dragIdx,1)[0];
+  diaries.splice(idx,0,moved);
+  _dragIdx=null;saveAll();renderDiaryList();
+  showToast('顺序已更新 ✓');
+}
+function diaryDragEnd(){
+  document.querySelectorAll('.diary-entry').forEach(el=>el.classList.remove('drag-over','dragging'));
+  _dragIdx=null;
+}
+
+// ════════════ THOUGHT PANEL ════════════
+let _thoughtTimer=null;
+
+function openThoughtPanel(){
+  const draft=localStorage.getItem('v2_thought_draft')||'';
+  const ta=document.getElementById('thought-textarea');
+  ta.value=draft;
+  document.getElementById('thought-panel').style.display='flex';
+  document.getElementById('thought-backdrop').style.display='block';
+  document.getElementById('thought-save-label').textContent=draft?'已自动保存 ✓':'开始输入…';
+  document.getElementById('thought-char-count').textContent=(draft.length||0)+' 字';
+  updateThoughtPreview();
+  setTimeout(()=>ta.focus(),60);
+}
+
+function closeThoughtPanel(){
+  document.getElementById('thought-panel').style.display='none';
+  document.getElementById('thought-backdrop').style.display='none';
+}
+
+function onThoughtInput(){
+  const val=document.getElementById('thought-textarea').value;
+  document.getElementById('thought-char-count').textContent=val.length+' 字';
+  document.getElementById('thought-save-label').textContent='保存中…';
+  clearTimeout(_thoughtTimer);
+  _thoughtTimer=setTimeout(()=>{
+    localStorage.setItem('v2_thought_draft',val);
+    document.getElementById('thought-save-label').textContent='已自动保存 ✓';
+    updateThoughtPreview();
+  },700);
+}
+
+function updateThoughtPreview(){
+  const draft=localStorage.getItem('v2_thought_draft')||'';
+  const el=document.getElementById('thought-preview-text');
+  if(el)el.textContent=draft?draft.slice(0,90)+(draft.length>90?'…':''):'暂无草稿';
+}
+
+function sendThought(){
+  // Flush any pending save first
+  clearTimeout(_thoughtTimer);
+  const val=(document.getElementById('thought-textarea').value||'').trim();
+  if(!val){showToast('内容是空的，请先写点什么 ✎');return;}
+
+  // Save as diary entry
+  const now=new Date();
+  diaries.unshift({
+    id:Date.now(),date:todayKey(),
+    dateLabel:now.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'}),
+    mood:'✍',summary:'长文随笔',body:val,tags:['随笔'],hours:'',isThought:true
+  });
+  localStorage.removeItem('v2_thought_draft');
+  saveAll();updateThoughtPreview();
+
+  // --- Paper airplane animation ---
+  const panel=document.getElementById('thought-panel');
+  const sendBtn=document.getElementById('thought-send-btn');
+  const br=sendBtn.getBoundingClientRect();
+
+  // Spawn airplane at send button center
+  const plane=document.createElement('div');
+  plane.className='airplane-projectile';
+  plane.textContent='✈';
+  plane.style.left=(br.left+br.width/2-15)+'px';
+  plane.style.top=(br.top+br.height/2-15)+'px';
+  document.body.appendChild(plane);
+
+  // Fold panel away
+  panel.classList.add('sending');
+  document.getElementById('thought-backdrop').style.opacity='0';
+  document.getElementById('thought-backdrop').style.transition='opacity .45s';
+
+  setTimeout(()=>{
+    panel.classList.remove('sending');
+    panel.style.display='none';
+    document.getElementById('thought-panel').querySelector('textarea').value='';
+    document.getElementById('thought-char-count').textContent='0 字';
+    document.getElementById('thought-backdrop').style.display='none';
+    document.getElementById('thought-backdrop').style.opacity='1';
+    document.getElementById('thought-backdrop').style.transition='';
+    if(document.body.contains(plane))document.body.removeChild(plane);
+    renderDiaryList();renderTimeChart();
+    showToast('随笔已收入日记 ✈');
+  },1100);
+}
+
+// ════════════ INIT ════════════
+async function init(){
+  loadAll();
+  updateExamLabels();document.getElementById('overview-date').textContent=overviewDateStr();
+  updateCountdown();setInterval(updateCountdown,30000);
+  renderSched();renderKP();updateProgress();renderPlan();
+  renderOverviewOrbs();renderTimeChart();renderOverviewCal();
+  renderCheckinHero();renderCheckinCal();renderSidebarStreak();
+  renderDiaryList();updateThoughtPreview();
+  document.getElementById('diary-today').textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
+
+  // ── 云端加载（在本地渲染完成后，用云端数据覆盖）──
+  if(CLOUD_ON){
+    const cd=await cloudLoad();
+    if(cd&&cd._ts){
+      // 云端数据覆盖本地
+      if(cd.kpState)   kpState  =cd.kpState;
+      if(cd.checkins)  checkins =cd.checkins;
+      if(cd.diaries)   diaries  =cd.diaries;
+      if(cd.calcKP)    calcKP   =cd.calcKP;
+      if(cd.linKP)     linKP    =cd.linKP;
+      if(cd.planData)  planData =cd.planData;
+      if(cd.schedData) schedData=cd.schedData;
+      if(cd.goalsData) goalsData=cd.goalsData;
+      if(cd.examDate)  examDate =cd.examDate;
+      normaliseCheckins();
+      // 写入 localStorage 作为缓存
+      const items={v2_kpState:kpState,v2_checkins:checkins,v2_diaries:diaries,v2_calcKP:calcKP,
+        v2_linKP:linKP,v2_plan:planData,v2_sched:schedData,v2_goals:goalsData,v2_examDate:examDate};
+      for(const[k,v]of Object.entries(items))try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
+      // 重新渲染
+      renderSched();renderKP();updateProgress();renderPlan();
+      renderOverviewOrbs();renderTimeChart();renderOverviewCal();
+      renderCheckinHero();renderCheckinCal();renderSidebarStreak();
+      renderDiaryList();updateThoughtPreview();updateExamLabels();
+      document.getElementById('overview-date').textContent=overviewDateStr();
+      cloudStatus('☁ 已同步','var(--green)');
+    } else if(cd===null){
+      // Bin 是空的（首次），把当前数据推上去
+      cloudSave();
+    }
+  } else {
+    cloudStatus('☁ 本地模式');
+  }
+}
+init();
+</script>
+</body>
+</html>
