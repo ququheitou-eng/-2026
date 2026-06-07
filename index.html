@@ -982,9 +982,9 @@ function collapseAllCh(){document.querySelectorAll('.ch-items').forEach(e=>e.cla
 
 // ════════════ SCHEDULE ════════════
 const SC=[{c:'var(--blue-dim)',t:'var(--blue)',l:'蓝'},{c:'var(--green-dim)',t:'var(--green)',l:'绿'},{c:'var(--amber-dim)',t:'var(--amber)',l:'橙'},{c:'var(--purple-dim)',t:'var(--purple)',l:'紫'},{c:'var(--red-dim)',t:'var(--red)',l:'红'}];
-function renderSched(){document.getElementById('sched-view').innerHTML=`<div class="daily-sched">${schedData.map(r=>`<div class="sched-row"><div class="sched-time">${r.time}</div><div class="sched-bar" style="background:${r.color};color:${r.tc}">${r.label}</div></div>`).join('')}</div>`;}
-function renderSchedEdit(){document.getElementById('sched-edit').innerHTML=`<div class="edit-toolbar">✎ 修改后点「完成编辑」保存</div><div>${schedData.map((r,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><input class="edit-input" style="width:110px;flex-shrink:0" value="${esc(r.time)}" onchange="schedData[${i}].time=this.value;saveAll()"><input class="edit-input" style="flex:1" value="${esc(r.label)}" onchange="schedData[${i}].label=this.value;saveAll()"><select class="edit-select" onchange="const o=JSON.parse(this.value);schedData[${i}].color=o.c;schedData[${i}].tc=o.t;saveAll()">${SC.map(c=>`<option value='${JSON.stringify({c:c.c,t:c.t})}' ${r.color===c.c?'selected':''}>${c.l}</option>`).join('')}</select><button class="edit-del-btn" onclick="schedData.splice(${i},1);saveAll();renderSchedEdit();renderSched()">✕</button></div>`).join('')}<button class="add-row-btn" onclick="schedData.push({time:'新时段',label:'描述',color:'var(--blue-dim)',tc:'var(--blue)'});saveAll();renderSchedEdit();renderSched()">＋ 添加</button></div>`;}
-function toggleSchedEdit(){schedEditMode=!schedEditMode;const btn=document.getElementById('sched-edit-btn');document.getElementById('sched-view').style.display=schedEditMode?'none':'block';document.getElementById('sched-edit').style.display=schedEditMode?'block':'none';if(schedEditMode){btn.textContent='✓ 完成编辑';btn.classList.add('btn-done');btn.classList.remove('btn-edit');renderSchedEdit();}else{btn.textContent='✎ 编辑';btn.classList.remove('btn-done');btn.classList.add('btn-edit');renderSched();saveAll();showToast('时间安排已保存 ✓');}}
+function renderSched(){const el=document.getElementById('sched-view');if(!el)return;el.innerHTML=`<div class="daily-sched">${schedData.map(r=>`<div class="sched-row"><div class="sched-time">${r.time}</div><div class="sched-bar" style="background:${r.color};color:${r.tc}">${r.label}</div></div>`).join('')}</div>`;}
+function renderSchedEdit(){const el=document.getElementById('sched-edit');if(!el)return;el.innerHTML=`<div class="edit-toolbar">✎ 修改后点「完成编辑」保存</div><div>${schedData.map((r,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><input class="edit-input" style="width:110px;flex-shrink:0" value="${esc(r.time)}" onchange="schedData[${i}].time=this.value;saveAll()"><input class="edit-input" style="flex:1" value="${esc(r.label)}" onchange="schedData[${i}].label=this.value;saveAll()"><select class="edit-select" onchange="const o=JSON.parse(this.value);schedData[${i}].color=o.c;schedData[${i}].tc=o.t;saveAll()">${SC.map(c=>`<option value='${JSON.stringify({c:c.c,t:c.t})}' ${r.color===c.c?'selected':''}>${c.l}</option>`).join('')}</select><button class="edit-del-btn" onclick="schedData.splice(${i},1);saveAll();renderSchedEdit();renderSched()">✕</button></div>`).join('')}<button class="add-row-btn" onclick="schedData.push({time:'新时段',label:'描述',color:'var(--blue-dim)',tc:'var(--blue)'});saveAll();renderSchedEdit();renderSched()">＋ 添加</button></div>`;}
+function toggleSchedEdit(){schedEditMode=!schedEditMode;const btn=document.getElementById('sched-edit-btn');if(!btn)return;const sv=document.getElementById('sched-view'),se=document.getElementById('sched-edit');if(sv)sv.style.display=schedEditMode?'none':'block';if(se)se.style.display=schedEditMode?'block':'none';if(schedEditMode){btn.textContent='✓ 完成编辑';btn.classList.add('btn-done');btn.classList.remove('btn-edit');renderSchedEdit();}else{btn.textContent='✎ 编辑';btn.classList.remove('btn-done');btn.classList.add('btn-edit');renderSched();saveAll();showToast('时间安排已保存 ✓');}}
 
 // ════════════ PLAN ════════════
 function renderPlan(){
@@ -1399,8 +1399,9 @@ async function init(){
   loadAll();
   updateExamLabels();document.getElementById('overview-date').textContent=overviewDateStr();
   updateCountdown();setInterval(updateCountdown,30000);
-  renderSched();renderKP();updateProgress();renderPlan();
-  renderOverviewOrbs();renderTimeChart();renderOverviewCal();
+  // renderSched() omitted — schedule card removed from overview
+  renderKP();updateProgress();renderPlan();
+  renderOverviewOrbs();renderTimeChart();
   renderCheckinHero();renderCheckinCal();renderSidebarStreak();
   renderDiaryList();updateThoughtPreview();
   document.getElementById('diary-today').textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
@@ -1409,7 +1410,6 @@ async function init(){
   if(CLOUD_ON){
     const cd=await cloudLoad();
     if(cd&&cd._ts){
-      // 云端数据覆盖本地
       if(cd.kpState)   kpState  =cd.kpState;
       if(cd.checkins)  checkins =cd.checkins;
       if(cd.diaries)   diaries  =cd.diaries;
@@ -1420,19 +1420,17 @@ async function init(){
       if(cd.goalsData) goalsData=cd.goalsData;
       if(cd.examDate)  examDate =cd.examDate;
       normaliseCheckins();
-      // 写入 localStorage 作为缓存
       const items={v2_kpState:kpState,v2_checkins:checkins,v2_diaries:diaries,v2_calcKP:calcKP,
         v2_linKP:linKP,v2_plan:planData,v2_sched:schedData,v2_goals:goalsData,v2_examDate:examDate};
       for(const[k,v]of Object.entries(items))try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
-      // 重新渲染
-      renderSched();renderKP();updateProgress();renderPlan();
-      renderOverviewOrbs();renderTimeChart();renderOverviewCal();
+      // 重新渲染（不含已删除的 sched/overviewCal）
+      renderKP();updateProgress();renderPlan();
+      renderOverviewOrbs();renderTimeChart();
       renderCheckinHero();renderCheckinCal();renderSidebarStreak();
       renderDiaryList();updateThoughtPreview();updateExamLabels();
       document.getElementById('overview-date').textContent=overviewDateStr();
       cloudStatus('☁ 已同步','var(--green)');
     } else if(cd===null){
-      // Bin 是空的（首次），把当前数据推上去
       cloudSave();
     }
   } else {
