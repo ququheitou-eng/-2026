@@ -267,7 +267,25 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
 
 /* Thought trigger button hover preview */
 .thought-trigger-wrap{position:relative;display:inline-block}
-.thought-preview-popup{position:absolute;bottom:calc(100% + 8px);right:0;width:220px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:11px 13px;font-size:11px;color:var(--text2);line-height:1.7;box-shadow:0 4px 16px rgba(0,0,0,0.1);display:none;z-index:200;white-space:pre-wrap;word-break:break-all}
+/* Time chart – horizontal strip design */
+.tc-wrap{display:flex;flex-direction:column;gap:5px;padding:2px 0}
+.tc-row{display:flex;align-items:center;gap:10px;cursor:pointer;border-radius:var(--radius-sm);padding:5px 8px;transition:background .12s;position:relative}
+.tc-row:hover{background:var(--bg3)}
+.tc-date{font-family:var(--font-mono);font-size:11px;color:var(--text3);width:56px;flex-shrink:0;text-align:right;line-height:1}
+.tc-bar-wrap{flex:1;height:20px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.tc-bar-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;padding-left:9px;min-width:6px}
+.tc-hours{font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,0.92);white-space:nowrap;font-weight:500}
+.tc-mood{font-size:14px;flex-shrink:0;width:22px;text-align:center;line-height:1}
+/* Hover detail card */
+.tc-detail{display:none;position:absolute;left:70px;top:calc(100% + 4px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 15px;z-index:80;min-width:240px;max-width:360px;box-shadow:0 6px 22px rgba(0,0,0,0.1);font-size:12px;line-height:1.8;color:var(--text2)}
+.tc-row:hover .tc-detail{display:block}
+.tc-detail-head{font-weight:500;color:var(--text);font-size:13px;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.tc-detail-body{color:var(--text2);white-space:pre-wrap;max-height:120px;overflow-y:auto;font-size:11px;line-height:1.7;margin-top:3px}
+.tc-detail-tags{margin-top:6px;display:flex;gap:4px;flex-wrap:wrap}
+.tc-detail-tag{font-size:10px;padding:1px 7px;border-radius:20px;background:var(--bg4);color:var(--text3)}
+.time-chart-total{font-size:12px;color:var(--text3);margin-top:10px;text-align:right;font-family:var(--font-mono)}
+/* Thought trigger preview – appears BELOW button */
+.thought-preview-popup{position:absolute;top:calc(100% + 8px);right:0;bottom:auto;width:220px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:11px 13px;font-size:11px;color:var(--text2);line-height:1.7;box-shadow:0 4px 16px rgba(0,0,0,0.1);display:none;z-index:600;white-space:pre-wrap;word-break:break-all}
 .thought-preview-popup .preview-label{font-size:10px;color:var(--text3);font-weight:500;margin-bottom:5px;display:block;letter-spacing:.05em;text-transform:uppercase}
 .thought-trigger-wrap:hover .thought-preview-popup{display:block}
 
@@ -276,14 +294,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
 .diary-entry.is-thought .drag-handle{color:rgba(217,119,6,0.3)}
 .diary-entry.is-thought:hover .drag-handle{color:var(--amber)}
 
-/* Paper airplane animation */
+/* Paper airplane animation – big */
 @keyframes fly-away{
-  0%{transform:translate(0,0) rotate(-10deg) scale(1);opacity:1}
-  20%{transform:translate(50px,-80px) rotate(-28deg) scale(1.08);opacity:1}
-  55%{transform:translate(180px,-280px) rotate(-42deg) scale(.38);opacity:.75}
-  100%{transform:translate(340px,-500px) rotate(-55deg) scale(.02);opacity:0}
+  0%{transform:translate(0,0) rotate(-15deg) scale(1);opacity:1}
+  15%{transform:translate(30px,-60px) rotate(-25deg) scale(1.15);opacity:1}
+  50%{transform:translate(160px,-260px) rotate(-38deg) scale(.65);opacity:.9}
+  100%{transform:translate(360px,-520px) rotate(-50deg) scale(.05);opacity:0}
 }
-.airplane-projectile{position:fixed;font-size:30px;z-index:2000;pointer-events:none;line-height:1;animation:fly-away 1.05s cubic-bezier(.2,0,.8,1) forwards}
+.airplane-projectile{position:fixed;z-index:2000;pointer-events:none;line-height:1;animation:fly-away 1.15s cubic-bezier(.15,0,.75,1) forwards}
 
 @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px}.plan-grid{grid-template-columns:1fr 1fr}.prog-grid{grid-template-columns:1fr}.plan-detail-grid{grid-template-columns:1fr}.orbs-row{gap:20px}}
 </style>
@@ -360,21 +378,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
     </div>
   </div>
   <div class="card">
-    <div class="card-title"><span class="card-title-icon">⏱</span>学习时长记录 <span style="font-size:11px;color:var(--text3);font-weight:400">悬停查看详情</span></div>
-    <div style="position:relative;padding:0 4px"><div class="time-chart-bars" id="time-chart-bars"></div></div>
+    <div class="card-title"><span class="card-title-icon">⏱</span>学习时长记录 <span style="font-size:11px;color:var(--text3);font-weight:400">悬停查看完整内容</span></div>
+    <div id="time-chart-bars"></div>
     <div class="time-chart-total" id="time-chart-total"></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="card-title-icon">⊡</span>每日时间安排<span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:4px">工作日3h · 周末弹性 · 目标90h+</span>
-      <div style="margin-left:auto"><button class="filter-btn btn-edit" id="sched-edit-btn" onclick="toggleSchedEdit()">✎ 编辑</button></div>
-    </div>
-    <div id="sched-view"></div><div id="sched-edit" style="display:none"></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="card-title-icon">◈</span>本月签到热力图 <span style="font-size:11px;color:var(--text3);font-weight:400">点击任意日期查看/编辑</span></div>
-    <div class="cal-labels" id="cal-week-labels"></div>
-    <div class="cal-grid" id="cal-grid"></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--text3)">少 <div style="width:10px;height:10px;border-radius:2px;background:rgba(22,163,74,0.2)"></div><div style="width:10px;height:10px;border-radius:2px;background:rgba(22,163,74,0.5)"></div><div style="width:10px;height:10px;border-radius:2px;background:rgba(22,163,74,0.85)"></div> 多（目标完成数）&nbsp;·&nbsp; <span style="border:1px dashed rgba(217,119,6,0.5);padding:1px 5px;border-radius:3px;color:var(--amber)">虚线=未打卡可补签</span></div>
   </div>
   <div class="card">
     <div class="card-title"><span class="card-title-icon">!</span>85分策略</div>
@@ -846,23 +852,37 @@ function doCheckin(){
 }
 
 // ════════════ TIME CHART ════════════
-const BAR_COLORS=[['#16a34a','#4ade80'],['#2563eb','#60a5fa'],['#d97706','#fbbf24'],['#7c3aed','#a78bfa'],['#dc2626','#f87171'],['#0891b2','#22d3ee']];
 function renderTimeChart(){
-  const data=[...diaries].reverse();
-  if(!data.length){document.getElementById('time-chart-bars').innerHTML='<div style="padding:20px;font-size:13px;color:var(--text3)">写日记并记录时长后，这里会显示图表</div>';return;}
-  const maxH=Math.max(...data.map(d=>parseHours(d.hours)),1);
+  const data=[...diaries].reverse(); // oldest first
+  const el=document.getElementById('time-chart-bars');
+  if(!data.length){el.innerHTML='<div style="padding:20px;font-size:13px;color:var(--text3)">写日记并记录时长后这里会出现学习记录</div>';return;}
+  const maxH=Math.max(...data.map(d=>parseHours(d.hours)),0.5);
   const total=data.reduce((s,d)=>s+parseHours(d.hours),0);
-  document.getElementById('time-chart-bars').innerHTML=data.map((d,i)=>{
-    const h=parseHours(d.hours);const pct=Math.max(h/maxH,h>0?0.04:0)*100;
-    const[c1,c2]=BAR_COLORS[i%BAR_COLORS.length];
-    const label=(d.dateLabel||d.date).replace(/周./,'').replace('日','').slice(-4);
-    return`<div class="time-bar-col">
-      <div class="time-tooltip">${d.mood||''} ${d.dateLabel||d.date}<br><b>${h}h</b><br>${esc((d.summary||'').slice(0,20))}</div>
-      <div class="time-bar" style="height:${pct}%;background:linear-gradient(180deg,${c2},${c1})">
-        <div class="time-bar-label">${label}</div>
+  // Color: single green hue, opacity = proportion of max
+  el.innerHTML=`<div class="tc-wrap">`+data.map(d=>{
+    const h=parseHours(d.hours);
+    const pct=Math.max((h/maxH)*100,h>0?3:0);
+    const alpha=0.25+0.75*(h/maxH); // 0.25–1.0
+    const color=`rgba(22,163,74,${alpha.toFixed(2)})`;
+    const dateStr=(d.dateLabel||d.date).replace(/周./,'').trim();
+    const bodyPreview=(d.body||'').trim();
+    const tagsHtml=(d.tags||[]).filter(Boolean).map(t=>`<span class="tc-detail-tag">${esc(t)}</span>`).join('');
+    return`<div class="tc-row">
+      <div class="tc-date">${dateStr}</div>
+      <div class="tc-bar-wrap">
+        <div class="tc-bar-fill" style="width:${pct}%;background:${color}">
+          ${h>0?`<span class="tc-hours">${h}h</span>`:''}
+        </div>
+      </div>
+      <div class="tc-mood">${d.mood||''}</div>
+      <div class="tc-detail">
+        <div class="tc-detail-head"><span>${d.mood||''}</span><span>${esc(dateStr)}</span><span style="color:var(--green);font-family:var(--font-mono)">${h}h</span></div>
+        <div style="font-weight:500;color:var(--text);font-size:12px;margin-bottom:4px">${esc(d.summary||'')}</div>
+        ${bodyPreview?`<div class="tc-detail-body">${esc(bodyPreview)}</div>`:''}
+        ${tagsHtml?`<div class="tc-detail-tags">${tagsHtml}</div>`:''}
       </div>
     </div>`;
-  }).join('');
+  }).join('')+`</div>`;
   document.getElementById('time-chart-total').textContent=`累计 ${total.toFixed(1)}h · 目标 90h · 已完成 ${Math.round(total/90*100)}%`;
 }
 
@@ -1338,12 +1358,21 @@ function sendThought(){
   const sendBtn=document.getElementById('thought-send-btn');
   const br=sendBtn.getBoundingClientRect();
 
-  // Spawn airplane at send button center
+  // Spawn paper plane SVG at send button center
   const plane=document.createElement('div');
   plane.className='airplane-projectile';
-  plane.textContent='✈';
-  plane.style.left=(br.left+br.width/2-15)+'px';
-  plane.style.top=(br.top+br.height/2-15)+'px';
+  plane.style.left=(br.left+br.width/2-40)+'px';
+  plane.style.top=(br.top+br.height/2-40)+'px';
+  // Large paper plane SVG
+  plane.innerHTML=`<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <filter id="ps"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="rgba(22,163,74,0.4)"/></filter>
+    <g filter="url(#ps)">
+      <path d="M8 40 L72 8 L48 72 L38 48 Z" fill="#16a34a"/>
+      <path d="M8 40 L38 48 L48 72 Z" fill="#4ade80"/>
+      <path d="M38 48 L72 8 L48 72 Z" fill="#15803d"/>
+      <path d="M8 40 L72 8 L38 48" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" fill="none"/>
+    </g>
+  </svg>`;
   document.body.appendChild(plane);
 
   // Fold panel away
