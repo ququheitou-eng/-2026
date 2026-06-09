@@ -305,6 +305,31 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
 }
 .airplane-projectile{position:fixed;z-index:2000;pointer-events:none;animation:fly-away 3.2s cubic-bezier(.25,.1,.3,1) forwards}
 
+/* ── Pomodoro Timer ── */
+.pomo-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:2px 0}
+.pomo-svg{width:136px;height:136px;overflow:visible;display:block}
+.pomo-track{fill:none;stroke:var(--bg4);stroke-width:9}
+.pomo-arc{fill:none;stroke-width:9;stroke-linecap:round;
+  stroke-dasharray:326.7;stroke-dashoffset:326.7;
+  transform-origin:68px 68px;transform:rotate(-90deg);
+  transition:stroke-dashoffset .9s linear,stroke .3s}
+.pomo-time-txt{font-family:var(--font-mono);font-size:26px;font-weight:500;fill:var(--text);text-anchor:middle;dominant-baseline:central}
+.pomo-lbl-txt{font-family:var(--font-sans);font-size:9px;fill:var(--text3);text-anchor:middle;dominant-baseline:central;letter-spacing:.03em}
+.pomo-controls{display:flex;align-items:center;gap:10px}
+.pomo-btn-main{padding:10px 26px;border-radius:50px;background:var(--red);color:#fff;
+  font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:var(--font-sans);
+  transition:all .2s;min-width:108px;text-align:center;box-shadow:0 2px 10px rgba(220,38,38,.22)}
+.pomo-btn-main:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.pomo-btn-main.paused{background:var(--amber);box-shadow:0 2px 10px rgba(217,119,6,.2)}
+.pomo-btn-main.sw{background:var(--blue);box-shadow:0 2px 10px rgba(37,99,235,.2)}
+.pomo-btn-icon{padding:9px 13px;border-radius:50px;background:var(--bg3);color:var(--text2);
+  font-size:14px;cursor:pointer;border:1px solid var(--border2);font-family:var(--font-sans);
+  transition:all .15s;line-height:1}
+.pomo-btn-icon:hover{background:var(--bg4)}
+.pomo-session-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:center;min-height:16px}
+.pomo-dot{width:9px;height:9px;border-radius:50%;background:var(--bg4);transition:all .3s}
+.pomo-dot.done{background:var(--red)}.pomo-dot.done.sw{background:var(--blue)}
+.pomo-session-txt{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-left:3px}
 @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px}.plan-grid{grid-template-columns:1fr 1fr}.prog-grid{grid-template-columns:1fr}.plan-detail-grid{grid-template-columns:1fr}.orbs-row{gap:20px}}
 </style>
 </head>
@@ -377,6 +402,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-si
       <div class="prog-pct" id="lin-pct" style="color:var(--blue)">0%</div>
       <div class="prog-bar-wrap"><div class="prog-bar" id="lin-bar" style="background:var(--blue)"></div></div>
       <div class="prog-sub" id="lin-sub">加载中…</div>
+    </div>
+  </div>
+  <!-- ── Pomodoro Timer ── -->
+  <div class="card">
+    <div class="card-title">
+      <span class="card-title-icon">⏱</span>专注计时
+      <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:2px" id="pomo-mode-label">· 番茄钟 25分钟</span>
+      <button id="pomo-mode-btn" onclick="pomoToggleMode()"
+        style="margin-left:auto;font-size:11px;padding:3px 11px;border:1px solid var(--border2);border-radius:20px;background:transparent;cursor:pointer;color:var(--text3);font-family:var(--font-sans);transition:all .15s">
+        ⌛ 切换正计时
+      </button>
+    </div>
+    <div class="pomo-wrap">
+      <svg class="pomo-svg" viewBox="0 0 136 136">
+        <circle cx="68" cy="68" r="52" class="pomo-track"/>
+        <circle cx="68" cy="68" r="52" class="pomo-arc" id="pomo-arc"/>
+        <text x="68" y="63" class="pomo-time-txt" id="pomo-time-el">25:00</text>
+        <text x="68" y="82" class="pomo-lbl-txt" id="pomo-lbl-el">准备开始</text>
+      </svg>
+      <div class="pomo-controls">
+        <button class="pomo-btn-main" id="pomo-start-btn" onclick="pomoStartPause()">▶ 开始</button>
+        <button class="pomo-btn-icon" onclick="pomoReset()" title="重置">↺</button>
+      </div>
+      <div class="pomo-session-row" id="pomo-session-row"></div>
     </div>
   </div>
   <div class="card">
@@ -732,14 +781,16 @@ function normaliseCheckins(){
   Object.keys(checkins).forEach(k=>{
     const e=checkins[k];
     if(!e.labels)e.labels=[];if(!e.sessions)e.sessions=[false,false,false];
+    if(e.pomodoros===undefined)e.pomodoros=0;
     while(e.goals.length<goalsData.length)e.goals.push(false);
     while(e.labels.length<goalsData.length)e.labels.push('');
     e.goals=e.goals.slice(0,goalsData.length);e.labels=e.labels.slice(0,goalsData.length);
   });
 }
 function ensureCheckinEntry(k){
-  if(!checkins[k])checkins[k]={checked:false,goals:[],labels:[],sessions:[false,false,false]};
+  if(!checkins[k])checkins[k]={checked:false,goals:[],labels:[],sessions:[false,false,false],pomodoros:0};
   if(!checkins[k].labels)checkins[k].labels=[];
+  if(checkins[k].pomodoros===undefined)checkins[k].pomodoros=0;
   if(!checkins[k].sessions)checkins[k].sessions=[false,false,false];
   while(checkins[k].goals.length<goalsData.length)checkins[k].goals.push(false);
   while(checkins[k].labels.length<goalsData.length)checkins[k].labels.push('');
@@ -1415,6 +1466,81 @@ function sendThought(){
   },3400);
 }
 
+// ════════════ POMODORO ════════════
+const POMO_DUR=25*60, POMO_CIRC=2*Math.PI*52;
+let pomoMode='countdown', pomoState='idle';
+let pomoSec=POMO_DUR, pomoElapsed=0, _pomoInt=null;
+
+function pomoGetSessions(){return(checkins[todayKey()]?.pomodoros)||0;}
+function pomoAddSession(){
+  const k=todayKey();ensureCheckinEntry(k);
+  checkins[k].pomodoros=(checkins[k].pomodoros||0)+1;saveAll();
+}
+function pomoRender(){
+  const arc=document.getElementById('pomo-arc');if(!arc)return;
+  const timeEl=document.getElementById('pomo-time-el');
+  const lblEl=document.getElementById('pomo-lbl-el');
+  const startBtn=document.getElementById('pomo-start-btn');
+  const modeBtn=document.getElementById('pomo-mode-btn');
+  const modeLbl=document.getElementById('pomo-mode-label');
+  const sessRow=document.getElementById('pomo-session-row');
+
+  const dispSec=pomoMode==='countdown'?pomoSec:pomoElapsed;
+  const progress=pomoMode==='countdown'?Math.max(1-pomoSec/POMO_DUR,0):Math.min(pomoElapsed/POMO_DUR,1);
+
+  timeEl.textContent=`${String(Math.floor(dispSec/60)).padStart(2,'0')}:${String(dispSec%60).padStart(2,'0')}`;
+  arc.style.strokeDashoffset=POMO_CIRC*(1-progress);
+  arc.style.stroke=pomoMode==='countdown'?'var(--red)':'var(--blue)';
+
+  const lmap={idle:pomoMode==='countdown'?'准备开始':'自由计时',running:'专注中 ✦',paused:'已暂停'};
+  lblEl.textContent=lmap[pomoState]||'';
+
+  if(pomoState==='running'){
+    startBtn.textContent='⏸ 暂停';startBtn.className='pomo-btn-main paused';
+  }else{
+    startBtn.textContent=pomoState==='paused'?'▶ 继续':'▶ 开始';
+    startBtn.className='pomo-btn-main'+(pomoMode==='stopwatch'?' sw':'');
+  }
+  if(modeBtn)modeBtn.textContent=pomoMode==='countdown'?'⌛ 切换正计时':'🍅 切换番茄钟';
+  if(modeLbl)modeLbl.textContent=pomoMode==='countdown'?'· 番茄钟 25分钟':'· 正计时模式';
+
+  const n=pomoGetSessions();const shown=Math.max(n,5);const isSw=pomoMode==='stopwatch';
+  if(sessRow)sessRow.innerHTML=Array.from({length:shown},(_,i)=>
+    `<div class="pomo-dot${i<n?' done'+(isSw?' sw':''):''}"></div>`
+  ).join('')+(n>0?`<span class="pomo-session-txt">今日 ${n} 番茄 🍅</span>`:'');
+}
+function pomoStartPause(){
+  if(pomoState==='running'){
+    clearInterval(_pomoInt);_pomoInt=null;pomoState='paused';
+  }else{
+    pomoState='running';
+    _pomoInt=setInterval(()=>{
+      if(pomoMode==='countdown'){pomoSec--;if(pomoSec<=0){pomoComplete();return;}}
+      else{pomoElapsed++;if(pomoElapsed>0&&pomoElapsed%POMO_DUR===0){pomoComplete();return;}}
+      pomoRender();
+    },1000);
+  }
+  pomoRender();
+}
+function pomoReset(){
+  clearInterval(_pomoInt);_pomoInt=null;pomoState='idle';pomoSec=POMO_DUR;pomoElapsed=0;pomoRender();
+}
+function pomoComplete(){
+  clearInterval(_pomoInt);_pomoInt=null;pomoState='idle';pomoSec=POMO_DUR;pomoElapsed=0;
+  pomoAddSession();const n=pomoGetSessions();
+  pomoRender();
+  showToast(`🍅 专注完成！今日第 ${n} 个番茄，休息一下～`);
+  if('Notification'in window){
+    if(Notification.permission==='granted')new Notification('🍅 专注完成！',{body:`今日第${n}个番茄，去休息5分钟`});
+    else if(Notification.permission==='default')Notification.requestPermission();
+  }
+}
+function pomoToggleMode(){
+  if(pomoState==='running')return;
+  pomoMode=pomoMode==='countdown'?'stopwatch':'countdown';
+  pomoReset();
+}
+
 // ════════════ INIT ════════════
 async function init(){
   loadAll();
@@ -1422,7 +1548,7 @@ async function init(){
   updateCountdown();setInterval(updateCountdown,30000);
   // renderSched() omitted — schedule card removed from overview
   renderKP();updateProgress();renderPlan();
-  renderOverviewOrbs();renderTimeChart();
+  renderOverviewOrbs();renderTimeChart();pomoRender();
   renderCheckinHero();renderCheckinCal();renderSidebarStreak();
   renderDiaryList();updateThoughtPreview();
   document.getElementById('diary-today').textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
@@ -1446,7 +1572,7 @@ async function init(){
       for(const[k,v]of Object.entries(items))try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
       // 重新渲染（不含已删除的 sched/overviewCal）
       renderKP();updateProgress();renderPlan();
-      renderOverviewOrbs();renderTimeChart();
+      renderOverviewOrbs();renderTimeChart();pomoRender();
       renderCheckinHero();renderCheckinCal();renderSidebarStreak();
       renderDiaryList();updateThoughtPreview();updateExamLabels();
       document.getElementById('overview-date').textContent=overviewDateStr();
